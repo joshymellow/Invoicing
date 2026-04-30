@@ -34,16 +34,53 @@ function refineTasks() {
     const commEl = document.getElementById('taskComments');
     let text = commEl.value;
     if (!text) return;
-    const upgrades = [
-        { f: /\bfixed\b/gi, r: "Resolved" },
-        { f: /\btalked to\b/gi, r: "Liaised with" },
-        { f: /\bmade\b/gi, r: "Developed" },
-        { f: /\bbug\b/gi, r: "technical issue" }
-    ];
-    upgrades.forEach(u => { text = text.replace(u.f, u.r); });
-    commEl.value = text.split('\n').map(line => '• ' + line.replace(/^[•\-\*\s]+/, '').trim()).join('\n');
-}
 
+    // 1. Corporate Dictionary (Updated for better matching)
+    const upgrades = [
+        { find: /fixed/gi, replace: "Resolved" },
+        { find: /helped/gi, replace: "Assisted with" },
+        { find: /started/gi, replace: "Initiated" },
+        { find: /finished/gi, replace: "Completed" },
+        { find: /talked to/gi, replace: "Liaised with" },
+        { find: /emailed/gi, replace: "Corresponded with" },
+        { find: /changed/gi, replace: "Updated" },
+        { find: /made/gi, replace: "Developed" },
+        { find: /checked/gi, replace: "Reviewed" },
+        { find: /looked at/gi, replace: "Analyzed" },
+        { find: /worked on/gi, replace: "Focused on" },
+        { find: /bug/gi, replace: "technical issue" },
+        { find: /stuff/gi, replace: "requirements" },
+        { find: /website/gi, replace: "web platform" }
+    ];
+
+    // 2. Apply word swaps
+    upgrades.forEach(item => {
+        text = text.replace(item.find, item.replace);
+    });
+
+    // 3. The "Deep Clean" for bullets
+    let lines = text.split('\n').filter(l => l.trim() !== '');
+    lines = lines.map(line => {
+        let cleanLine = line.trim();
+        
+        // Remove ANY existing bullets, dashes, or dots at the start
+        // This stops the "double bullet" issue seen in your screenshot
+        cleanLine = cleanLine.replace(/^[•\-\*\s·]+/, '').trim();
+        
+        // Capitalize first letter
+        if (cleanLine.length > 0) {
+            cleanLine = cleanLine.charAt(0).toUpperCase() + cleanLine.slice(1);
+        }
+        
+        return '• ' + cleanLine;
+    });
+
+    commEl.value = lines.join('\n');
+    
+    // Visual feedback
+    commEl.style.backgroundColor = "#e8f5e9";
+    setTimeout(() => { commEl.style.backgroundColor = "white"; }, 300);
+}
 function addTask() {
     const date = document.getElementById('taskDate').value;
     const main = document.getElementById('taskMain').value;
