@@ -1,24 +1,26 @@
-const STORAGE_KEY = 'invoice_data_final_v1';
+const DEFAULT_RATE = 5.17;
 let editIndex = null;
 let lastSnapshot = null;
 
-let invoiceData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-    name: '', num: '', client: '', contact: '', rate: 5.17, tasks: []
+let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceData_v1.4')) || {
+    name: '',
+    num: '',
+    client: '',
+    contact: 'your-email@example.com',
+    rate: DEFAULT_RATE,
+    tasks: []
 };
 
-// Sync UI on Load
 window.onload = () => {
-    document.getElementById('userName').value = invoiceData.name;
-    document.getElementById('invoiceNum').value = invoiceData.num;
-    document.getElementById('clientName').value = invoiceData.client;
-    document.getElementById('contactInfo').value = invoiceData.contact;
-    document.getElementById('hourlyRate').value = invoiceData.rate;
+    document.getElementById('userName').value = invoiceData.name || '';
+    document.getElementById('invoiceNum').value = invoiceData.num || '';
+    document.getElementById('clientName').value = invoiceData.client || '';
+    document.getElementById('contactInfo').value = invoiceData.contact || '';
+    document.getElementById('hourlyRate').value = invoiceData.rate || DEFAULT_RATE;
     document.getElementById('taskDate').valueAsDate = new Date();
     document.getElementById('issueDate').innerText = new Date().toLocaleDateString();
     render();
 };
-
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(invoiceData)); }
 
 function updateMeta() {
     invoiceData.name = document.getElementById('userName').value;
@@ -30,69 +32,23 @@ function updateMeta() {
     render();
 }
 
-function refineTasks() {
-    const commEl = document.getElementById('taskComments');
-    let text = commEl.value;
-    if (!text) return;
-
-    // 1. Strip ALL existing bullets/symbols/spaces from the start of every line
-    let lines = text.split('\n').map(line => {
-        return line.replace(/^[^a-zA-Z0-9]+/, '').trim();
-    }).filter(l => l !== "");
-
-    // 2. Define the Corporate Swaps
-    const upgrades = [
-        { f: /create/gi, r: "Architected" },
-        { f: /research/gi, r: "Conducted technical analysis of" },
-        { f: /launch/gi, r: "Deployed" },
-        { f: /make/gi, r: "Developed" },
-        { f: /website/gi, r: "web platform" },
-        { f: /fixed/gi, r: "Resolved" },
-        { f: /talked to/gi, r: "Liaised with" },
-        { f: /stuff/gi, r: "project requirements" },
-        { f: /tool/gi, r: "infrastructure" }
-    ];
-
-    // 3. Process the lines without adding bullets back
-    const polishedLines = lines.map(line => {
-        let newLine = line;
-        
-        upgrades.forEach(u => {
-            newLine = newLine.replace(u.f, u.r);
-        });
-
-        // Capitalize the first letter for a clean look
-        if (newLine.length > 0) {
-            newLine = newLine.charAt(0).toUpperCase() + newLine.slice(1);
-        }
-        return newLine; // Returning plain text (no bullet)
-    });
-
-    // 4. Update the textarea
-    commEl.value = polishedLines.join('\n');
-    
-    // Feedback "Flash"
-    commEl.style.backgroundColor = "#e8f5e9";
-    setTimeout(() => { commEl.style.backgroundColor = "white"; }, 300);
-}
-
 function addTask() {
     const date = document.getElementById('taskDate').value;
-    const main = document.getElementById('taskMain').value;
-    const dur = parseFloat(document.getElementById('taskDuration').value);
-    const comm = document.getElementById('taskComments').value;
+    const mainTask = document.getElementById('taskMain').value;
+    const comments = document.getElementById('taskComments').value;
+    const duration = parseFloat(document.getElementById('taskDuration').value);
 
-    if (!date || !main || isNaN(dur)) {
-        alert("Missing fields!");
+    if (!date || !mainTask || isNaN(duration)) {
+        alert("Please fill in Date, Main Task, and Hours.");
         return;
     }
 
-    const entry = { date, mainTask: main, duration: dur, comments: comm };
+    const entry = { date, mainTask, comments, duration };
 
     if (editIndex !== null) {
         invoiceData.tasks[editIndex] = entry;
         editIndex = null;
-        document.getElementById('mainAddBtn').innerText = "Add to Invoice";
+        document.querySelector('.btn-add').innerText = "Add to Invoice";
         document.getElementById('btn-cancel').style.display = "none";
     } else {
         invoiceData.tasks.push(entry);
@@ -100,37 +56,48 @@ function addTask() {
 
     invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     save();
-    
-    // Clear inputs
-    document.getElementById('taskMain').value = '';
-    document.getElementById('taskDuration').value = '';
-    document.getElementById('taskComments').value = '';
-    
+    resetForm();
     render();
+}
+
+function resetForm() {
+    document.getElementById('taskMain').value = '';
+    document.getElementById('taskComments').value = '';
+    document.getElementById('taskDuration').value = '';
+}
+
+function formatBullets(text) {
+    if (!text) return '';
+    const lines = text.split('\n').filter(l => l.trim() !== '');
+    return `<ul class="bullet-list">` + lines.map(l => `<li>${l}</li>`).join('') + `</ul>`;
 }
 
 function editTask(index) {
     const t = invoiceData.tasks[index];
     document.getElementById('taskDate').value = t.date;
     document.getElementById('taskMain').value = t.mainTask;
-    document.getElementById('taskDuration').value = t.duration;
     document.getElementById('taskComments').value = t.comments;
+    document.getElementById('taskDuration').value = t.duration;
+    
     editIndex = index;
-    document.getElementById('mainAddBtn').innerText = "Save Changes";
+    const btn = document.querySelector('.btn-add');
+    btn.innerText = "Save Changes";
     document.getElementById('btn-cancel').style.display = "inline-block";
 }
 
 function cancelEdit() {
     editIndex = null;
-    document.getElementById('mainAddBtn').innerText = "Add to Invoice";
+    resetForm();
+    document.querySelector('.btn-add').innerText = "Add to Invoice";
     document.getElementById('btn-cancel').style.display = "none";
-    document.getElementById('taskMain').value = '';
 }
 
 function deleteTask(index) {
-    invoiceData.tasks.splice(index, 1);
-    save();
-    render();
+    if(confirm("Delete entry?")) {
+        invoiceData.tasks.splice(index, 1);
+        save();
+        render();
+    }
 }
 
 function clearInvoice() {
@@ -140,43 +107,56 @@ function clearInvoice() {
         save();
         render();
         document.getElementById('btn-undo').style.display = "inline-block";
+        setTimeout(() => { document.getElementById('btn-undo').style.display = "none"; }, 15000);
     }
 }
 
 function undoClear() {
-    invoiceData.tasks = lastSnapshot;
-    document.getElementById('btn-undo').style.display = "none";
-    save();
-    render();
+    if (lastSnapshot) {
+        invoiceData.tasks = lastSnapshot;
+        lastSnapshot = null;
+        document.getElementById('btn-undo').style.display = "none";
+        save();
+        render();
+    }
 }
 
+function save() { localStorage.setItem('monthlyInvoiceData_v1.4', JSON.stringify(invoiceData)); }
+
 function render() {
-    document.getElementById('displayUserName').innerText = invoiceData.name || '[Name]';
+    document.getElementById('displayUserName').innerText = invoiceData.name || '[Your Name]';
     document.getElementById('displayInvNum').innerText = "INVOICE #" + invoiceData.num;
     document.getElementById('displayClient').innerText = invoiceData.client;
     document.getElementById('displayContact').innerText = invoiceData.contact;
     document.getElementById('displayRate').innerText = "$" + invoiceData.rate.toFixed(2);
 
-    const cont = document.getElementById('tasksContainer');
-    cont.innerHTML = '';
+    const container = document.getElementById('tasksContainer');
+    container.innerHTML = '';
     
-    let total = 0;
+    const groups = {};
     invoiceData.tasks.forEach((t, i) => {
-        total += (t.duration * invoiceData.rate);
-        const row = document.createElement('div');
-        row.className = 'date-group-wrapper';
-        row.innerHTML = `
-            <div class="date-group-header"><span>${t.date}</span></div>
-            <table style="width:100%"><tr>
-                <td><strong>${t.mainTask}</strong><br><small>${t.comments.replace(/\n/g, '<br>')}</small></td>
-                <td style="width:50px">${t.duration}h</td>
-                <td style="width:80px">$${(t.duration * invoiceData.rate).toFixed(2)}</td>
-                <td class="no-print" style="width:60px">
-                    <button onclick="editTask(${i})">✎</button>
-                    <button onclick="deleteTask(${i})">✕</button>
-                </td>
-            </tr></table>`;
-        cont.appendChild(row);
+        if(!groups[t.date]) groups[t.date] = [];
+        groups[t.date].push({...t, originalIndex: i});
     });
-    document.getElementById('totalDisplay').innerText = "$" + total.toFixed(2);
+
+    let grandTotal = 0;
+    Object.keys(groups).sort().forEach(date => {
+        let dayHrs = 0;
+        groups[date].forEach(t => dayHrs += t.duration);
+        const dayTotal = dayHrs * invoiceData.rate;
+        grandTotal += dayTotal;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'date-group-wrapper';
+        let html = `<div class="date-group-header"><span>${date}</span><span>Day: $${dayTotal.toFixed(2)}</span></div>`;
+        html += `<table><thead><tr><th>Details</th><th>Hrs</th><th>Amt</th><th class="no-print"></th></tr></thead><tbody>`;
+        
+        groups[date].forEach(item => {
+            html += `<tr><td><strong>${item.mainTask}</strong>${formatBullets(item.comments)}</td><td>${item.duration}</td><td>$${(item.duration * invoiceData.rate).toFixed(2)}</td>
+            <td class="no-print"><button class="action-btn" onclick="editTask(${item.originalIndex})">✎</button><button class="action-btn" onclick="deleteTask(${item.originalIndex})">✕</button></td></tr>`;
+        });
+        wrap.innerHTML = html + `</tbody></table>`;
+        container.appendChild(wrap);
+    });
+    document.getElementById('totalDisplay').innerText = "$" + grandTotal.toFixed(2);
 }
