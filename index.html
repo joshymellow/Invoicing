@@ -3,29 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Log & Invoice Manager</title>
+    <title>Professional Work Log & Invoice Manager</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
+    <!-- EDITOR SECTION (Hidden on PDF) -->
     <div class="no-print">
         <h1>Invoice Manager</h1>
         <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">
-            Contact: <strong>codornizjoshuaisaiah@gmail.com</strong>
+            Complete the fields below to personalize your invoice.
         </p>
         
+        <div class="input-row">
+             <div class="field" style="flex: 1.5;">
+                <label>Your Name / Company</label>
+                <input type="text" id="userName" placeholder="Your Full Name" oninput="updateMeta()">
+            </div>
+            <div class="field" style="flex: 2;">
+                <label>Contact Info (Email/Phone)</label>
+                <input type="text" id="contactInfo" placeholder="your@email.com" oninput="updateMeta()">
+            </div>
+        </div>
+
         <div class="input-row">
             <div class="field">
                 <label>Invoice #</label>
                 <input type="text" id="invoiceNum" placeholder="e.g. INV-001" oninput="updateMeta()">
             </div>
-            <div class="field">
+            <div class="field" style="flex: 1.5;">
                 <label>Client Name</label>
                 <input type="text" id="clientName" placeholder="Client Name" oninput="updateMeta()">
             </div>
-            <div class="field">
-                <label>Hourly Rate ($)</label>
+            <div class="field" style="max-width: 100px;">
+                <label>Rate ($)</label>
                 <input type="number" id="hourlyRate" step="0.01" oninput="updateMeta()">
             </div>
         </div>
@@ -68,16 +80,18 @@
         </div>
     </div>
 
+    <!-- INVOICE VIEW -->
     <div id="invoice-view">
         <header class="invoice-header">
-            <div class="client-info">
-                <h2 id="displayInvNum">INVOICE</h2>
-                <p id="displayClient">To: [Client Name]</p>
+            <div class="user-info">
+                <h2 id="displayUserName" style="margin:0; color:var(--primary);">[Your Name]</h2>
+                <p style="margin:5px 0 0 0; color:#555;"><strong>Contact:</strong> <span id="displayContact"></span></p>
             </div>
-            <div class="meta-info">
-                <p><strong>Contact:</strong> codornizjoshuaisaiah@gmail.com</p>
-                <p><strong>Rate:</strong> <span id="displayRate"></span>/hr</p>
-                <p><strong>Issued:</strong> <span id="issueDate"></span></p>
+            <div class="meta-info" style="text-align: right;">
+                <h3 id="displayInvNum" style="margin:0; font-size: 1.2rem;">INVOICE</h3>
+                <p style="margin:5px 0 0 0;"><strong>Client:</strong> <span id="displayClient"></span></p>
+                <p style="margin:2px 0 0 0;"><strong>Rate:</strong> <span id="displayRate"></span>/hr</p>
+                <p style="margin:2px 0 0 0;"><strong>Issued:</strong> <span id="issueDate"></span></p>
             </div>
         </header>
 
