@@ -1,7 +1,7 @@
 const DEFAULT_RATE = 5.17;
 let editIndex = null;
 
-let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV4')) || {
+let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV5')) || {
     num: '',
     client: '',
     rate: DEFAULT_RATE,
@@ -41,8 +41,9 @@ function addTask() {
     if (editIndex !== null) {
         invoiceData.tasks[editIndex] = entry;
         editIndex = null;
-        document.querySelector('.btn-add').innerText = "Add to Invoice";
-        document.querySelector('.btn-add').style.background = "";
+        const btn = document.querySelector('.btn-add');
+        btn.innerText = "Add to Invoice";
+        btn.style.background = "";
     } else {
         invoiceData.tasks.push(entry);
     }
@@ -91,7 +92,7 @@ function clearInvoice() {
     }
 }
 
-function save() { localStorage.setItem('monthlyInvoiceDataV4', JSON.stringify(invoiceData)); }
+function save() { localStorage.setItem('monthlyInvoiceDataV5', JSON.stringify(invoiceData)); }
 
 function render() {
     document.getElementById('displayInvNum').innerText = invoiceData.num ? `INVOICE #${invoiceData.num}` : 'INVOICE';
@@ -120,7 +121,7 @@ function render() {
         
         groups[date].forEach(item => {
             html += `<tr><td><strong>${item.mainTask}</strong>${formatBullets(item.comments)}</td><td>${item.duration}</td><td>$${(item.duration * invoiceData.rate).toFixed(2)}</td>
-            <td class="no-print"><button onclick="editTask(${item.originalIndex})">✎</button><button onclick="deleteTask(${item.originalIndex})">✕</button></td></tr>`;
+            <td class="no-print"><button class="action-btn" style="color:#3498db" onclick="editTask(${item.originalIndex})">✎</button><button class="action-btn" style="color:#e74c3c" onclick="deleteTask(${item.originalIndex})">✕</button></td></tr>`;
         });
         wrap.innerHTML = html + `</tbody></table>`;
         container.appendChild(wrap);
