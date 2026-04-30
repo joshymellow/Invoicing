@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Log System</title>
+    <title>Work Log & Invoice System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-    <!-- Configuration & Input Section -->
     <div class="no-print">
         <h1>Invoice Manager</h1>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">
+            Logged as: <strong>codornizjoshuaisaiah@gmail.com</strong>
+        </p>
         
         <div class="input-row">
             <div class="field">
@@ -20,7 +22,7 @@
             </div>
             <div class="field">
                 <label>Client Name</label>
-                <input type="text" id="clientName" placeholder="e.g. Acme Corp" oninput="updateMeta()">
+                <input type="text" id="clientName" placeholder="Client Name" oninput="updateMeta()">
             </div>
             <div class="field">
                 <label>Hourly Rate ($)</label>
@@ -30,31 +32,31 @@
 
         <hr>
 
-        <h3>Log New Task</h3>
-      <div class="log-row">
-    <div class="field">
-        <label>Date</label>
-        <input type="date" id="taskDate">
-    </div>
-    <div class="field">
-        <label>Main Task</label>
-        <input type="text" id="taskMain" placeholder="Task title">
-    </div>
-    <div class="field">
-        <label>Hours</label>
-        <input type="number" id="taskDuration" placeholder="0.0" step="0.25">
-    </div>
-</div>
-<div class="log-row">
-    <div class="field">
-        <label>Additional Comments</label>
-        <input type="text" id="taskComments" placeholder="Detailed notes (optional)">
-    </div>
-    <div class="field action" style="max-width: 200px;">
-        <label>&nbsp;</label>
-        <button class="btn-add" onclick="addTask()">Add to Invoice</button>
-    </div>
-</div>
+        <h3>Log Work Entry</h3>
+        <div class="log-row">
+            <div class="field">
+                <label>Date</label>
+                <input type="date" id="taskDate">
+            </div>
+            <div class="field" style="flex: 2;">
+                <label>Main Task</label>
+                <input type="text" id="taskMain" placeholder="What was the primary focus?">
+            </div>
+            <div class="field">
+                <label>Hours</label>
+                <input type="number" id="taskDuration" placeholder="0.00" step="0.25">
+            </div>
+        </div>
+        <div class="log-row">
+            <div class="field">
+                <label>Additional Comments (Enter for new bullet point)</label>
+                <textarea id="taskComments" placeholder="• Detailed note 1&#10;• Detailed note 2" rows="3"></textarea>
+            </div>
+            <div class="field action" style="max-width: 200px;">
+                <label>&nbsp;</label>
+                <button class="btn-add" onclick="addTask()">Add to Invoice</button>
+            </div>
+        </div>
 
         <div class="toolbar">
             <button class="btn-print" onclick="window.print()">Print / Save PDF</button>
@@ -62,7 +64,6 @@
         </div>
     </div>
 
-    <!-- The Actual Invoice View -->
     <div id="invoice-view">
         <header class="invoice-header">
             <div class="client-info">
@@ -77,8 +78,7 @@
         </header>
 
         <div id="tasksContainer">
-            <!-- Grouped items with daily subtotals will be injected here -->
-        </div>
+            </div>
 
         <footer class="invoice-footer">
             <div class="total-box">
