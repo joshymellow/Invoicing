@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Log & Invoice System</title>
+    <title>Monthly Work Log</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
     <div class="no-print">
         <h1>Invoice Manager</h1>
         <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">
-            Logged as: <strong>codornizjoshuaisaiah@gmail.com</strong>
+            Contact: <strong>codornizjoshuaisaiah@gmail.com</strong>
         </p>
         
         <div class="input-row">
@@ -40,7 +40,7 @@
             </div>
             <div class="field" style="flex: 2;">
                 <label>Main Task</label>
-                <input type="text" id="taskMain" placeholder="What was the primary focus?">
+                <input type="text" id="taskMain" placeholder="Primary Task Title">
             </div>
             <div class="field">
                 <label>Hours</label>
@@ -59,7 +59,7 @@
         </div>
 
         <div class="toolbar">
-            <button class="btn-print" onclick="window.print()">Print / Save PDF</button>
+            <button class="btn-print" onclick="window.print()">Print / Save PDF (Legal)</button>
             <button class="btn-clear" onclick="clearInvoice()">Clear Entire Month</button>
         </div>
     </div>
@@ -77,8 +77,7 @@
             </div>
         </header>
 
-        <div id="tasksContainer">
-            </div>
+        <div id="tasksContainer"></div>
 
         <footer class="invoice-footer">
             <div class="total-box">
