@@ -1,16 +1,17 @@
-body { font-family: sans-serif; padding: 20px; }
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-
-/* Hide the logger when printing */
-@media print {
-    .no-print {
-        display: none;
-    }
-    body { padding: 0; }
-    #invoice { border: none; }
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 2px solid #333;
+    margin-bottom: 20px;
 }
 
-.input-group { margin-bottom: 20px; }
-input { padding: 8px; margin-right: 5px; }
-.print-btn { background: #28a745; color: white; border: none; padding: 10px; cursor: pointer; }
+#displayInvNum {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+/* Ensure the input group looks nice */
+.input-group {
+    margin-bottom: 15px;
+}
