@@ -1,4 +1,4 @@
-# 📑 Professional Work Log & Invoice Manager (v1.9)
+# 📑 Professional Work Log & Invoice Manager (v1.8)
 
 A lightweight, browser-based invoicing tool designed for freelancers and independent contractors. Track your daily tasks, monitor your earnings in real-time, and generate professional, print-ready invoices in seconds.
 
@@ -42,5 +42,5 @@ Use the **Theme Selector** in the header to switch between:
 
 ---
 
-**Current Version:** 1.9.0  
+**Current Version:** 1.8.0  
 **Status:** Active Maintenance
