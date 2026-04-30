@@ -1,5 +1,5 @@
-// script.js
 const DEFAULT_RATE = 5.17;
+let editIndex = null; // Tracks if we are editing an existing item
 
 let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV2')) || {
     num: '',
@@ -26,42 +26,70 @@ function updateMeta() {
 }
 
 function addTask() {
-    // 1. Grab the elements
     const dateEl = document.getElementById('taskDate');
     const mainEl = document.getElementById('taskMain');
     const commEl = document.getElementById('taskComments');
     const durEl = document.getElementById('taskDuration');
+    const btnEl = document.querySelector('.btn-add');
 
-    // 2. Extract values
     const date = dateEl.value;
     const mainTask = mainEl.value;
     const comments = commEl.value;
     const duration = parseFloat(durEl.value);
 
-    // 3. Validate
     if (!date || !mainTask || isNaN(duration)) {
         alert("Please fill in Date, Main Task, and Hours.");
         return;
     }
 
-    // 4. Push data
-    invoiceData.tasks.push({ date, mainTask, comments, duration });
+    const newTask = { date, mainTask, comments, duration };
+
+    if (editIndex !== null) {
+        // Update existing task
+        invoiceData.tasks[editIndex] = newTask;
+        editIndex = null;
+        btnEl.innerText = "Add to Invoice";
+        btnEl.style.background = ""; // Reset to original blue
+    } else {
+        // Add new task
+        invoiceData.tasks.push(newTask);
+    }
     
-    // 5. Sort and Save
     invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     save();
     
-    // 6. Clear inputs & Refresh
+    // Clear inputs
     mainEl.value = '';
     commEl.value = '';
     durEl.value = '';
     render();
 }
 
+function editTask(index) {
+    const task = invoiceData.tasks[index];
+    
+    // Load values back into the form
+    document.getElementById('taskDate').value = task.date;
+    document.getElementById('taskMain').value = task.mainTask;
+    document.getElementById('taskComments').value = task.comments;
+    document.getElementById('taskDuration').value = task.duration;
+
+    // Set UI to Edit Mode
+    editIndex = index;
+    const btnEl = document.querySelector('.btn-add');
+    btnEl.innerText = "Save Changes";
+    btnEl.style.background = "#f39c12"; // Orange to indicate editing
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function deleteTask(index) {
-    invoiceData.tasks.splice(index, 1);
-    save();
-    render();
+    if(confirm("Delete this entry?")) {
+        invoiceData.tasks.splice(index, 1);
+        save();
+        render();
+    }
 }
 
 function clearInvoice() {
@@ -105,19 +133,25 @@ function render() {
 
         const wrapper = document.createElement('div');
         wrapper.className = 'date-group-wrapper';
+        wrapper.style.marginBottom = "20px";
+        wrapper.style.border = "1px solid #ddd";
+        wrapper.style.borderRadius = "8px";
+        wrapper.style.overflow = "hidden";
         
         let html = `
-            <div class="date-group-header" style="background: #f8f9fa; padding: 10px; display: flex; justify-content: space-between; border-bottom: 1px solid #ddd;">
-                <span>${formattedDate}</span>
-                <span style="background: #2c3e50; color: white; padding: 2px 8px; border-radius: 4px;">Day Total: $${dailySubtotal.toFixed(2)}</span>
+            <div class="date-group-header" style="background: #2c3e50; color: white; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold;">${formattedDate}</span>
+                <span style="font-size: 0.9rem; opacity: 0.9;">
+                    Hours: ${dailyHours.toFixed(2)} | Subtotal: $${dailySubtotal.toFixed(2)}
+                </span>
             </div>
-            <table style="width: 100%; border-collapse: collapse;">
+            <table style="width: 100%; border-collapse: collapse; background: white;">
                 <thead>
-                    <tr style="text-align: left; background: #fafafa;">
-                        <th style="padding: 10px; width: 60%;">Details</th>
-                        <th style="padding: 10px; width: 15%;">Hours</th>
-                        <th style="padding: 10px; width: 15%;">Amount</th>
-                        <th class="no-print" style="padding: 10px; width: 10%;"></th>
+                    <tr style="text-align: left; background: #f1f1f1; font-size: 0.8rem;">
+                        <th style="padding: 10px;">Details</th>
+                        <th style="padding: 10px;">Hrs</th>
+                        <th style="padding: 10px;">Amt</th>
+                        <th class="no-print" style="padding: 10px; width: 80px;">Action</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -127,13 +161,14 @@ function render() {
             html += `
                 <tr style="border-top: 1px solid #eee;">
                     <td style="padding: 10px;">
-                        <strong>${item.mainTask}</strong>
-                        ${item.comments ? `<br><small style="color: #666; font-style: italic;">${item.comments}</small>` : ''}
+                        <strong style="display:block;">${item.mainTask}</strong>
+                        ${item.comments ? `<small style="color: #666;">${item.comments}</small>` : ''}
                     </td>
                     <td style="padding: 10px;">${item.duration}</td>
                     <td style="padding: 10px;">$${lineTotal.toFixed(2)}</td>
-                    <td class="no-print" style="padding: 10px;">
-                        <button onclick="deleteTask(${item.originalIndex})" style="color: red; border: none; background: none; cursor: pointer;">✕</button>
+                    <td class="no-print" style="padding: 10px; white-space: nowrap;">
+                        <button onclick="editTask(${item.originalIndex})" style="color: #3498db; border: none; background: none; cursor: pointer; padding-right: 10px;">✎</button>
+                        <button onclick="deleteTask(${item.originalIndex})" style="color: #e74c3c; border: none; background: none; cursor: pointer;">✕</button>
                     </td>
                 </tr>`;
         });
