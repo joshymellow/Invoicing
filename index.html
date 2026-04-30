@@ -1,109 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Work Log & Invoice Manager</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<div class="container">
-    <div class="no-print">
-        <h1>Invoice Manager</h1>
-        <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">
-            Complete the fields below to personalize your invoice.
-        </p>
-        
-        <div class="input-row">
-             <div class="field" style="flex: 1.5;">
-                <label>Your Name / Company</label>
-                <input type="text" id="userName" placeholder="Your Full Name" oninput="updateMeta()">
-            </div>
-            <div class="field" style="flex: 2;">
-                <label>Contact Info (Email/Phone)</label>
-                <input type="text" id="contactInfo" placeholder="your@email.com" oninput="updateMeta()">
-            </div>
-        </div>
-
-        <div class="input-row">
-            <div class="field">
-                <label>Invoice #</label>
-                <input type="text" id="invoiceNum" placeholder="e.g. INV-001" oninput="updateMeta()">
-            </div>
-            <div class="field" style="flex: 1.5;">
-                <label>Client Name</label>
-                <input type="text" id="clientName" placeholder="Client Name" oninput="updateMeta()">
-            </div>
-            <div class="field" style="max-width: 100px;">
-                <label>Rate ($)</label>
-                <input type="number" id="hourlyRate" step="0.01" oninput="updateMeta()">
-            </div>
-        </div>
-
-        <hr>
-
-        <h3>Log Work Entry</h3>
-        <div class="log-row">
-            <div class="field">
-                <label>Date</label>
-                <input type="date" id="taskDate">
-            </div>
-            <div class="field" style="flex: 2;">
-                <label>Main Task</label>
-                <input type="text" id="taskMain" placeholder="Primary Task Title">
-            </div>
-            <div class="field">
-                <label>Hours</label>
-                <input type="number" id="taskDuration" placeholder="0.00" step="0.25">
-            </div>
-        </div>
-        <div class="log-row">
-            <div class="field">
-                <label>Additional Comments (Enter for new bullet point)</label>
-                <textarea id="taskComments" placeholder="• Detailed note 1&#10;• Detailed note 2" rows="3"></textarea>
-            </div>
-            <div class="field action" style="max-width: 250px;">
-                <label>&nbsp;</label>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn-add" onclick="addTask()">Add to Invoice</button>
-                    <button id="btn-cancel" class="btn-secondary" style="display:none;" onclick="cancelEdit()">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="toolbar">
-            <button class="btn-print" onclick="window.print()">Print / Save PDF (Legal)</button>
-            <button class="btn-clear" onclick="clearInvoice()">Clear Entire Month</button>
-            <button id="btn-undo" class="btn-undo" style="display:none;" onclick="undoClear()">↩ Undo Clear</button>
+<div class="no-print">
+    <h1>Invoice Manager v1.7</h1>
+    
+    <div id="statsBar" class="stats-grid">
+        <div class="stat-card">Hours This Month: <span id="statHours">0</span></div>
+        <div class="stat-card">Daily Avg: <span id="statAvg">0</span></div>
+        <div class="stat-card">Theme: 
+            <select id="themeSelect" onchange="changeTheme()">
+                <option value="classic">Classic Blue</option>
+                <option value="minimal">Minimalist Gray</option>
+            </select>
         </div>
     </div>
 
-    <div id="invoice-view">
-        <header class="invoice-header">
-            <div class="user-info">
-                <h2 id="displayUserName" style="margin:0; color:var(--primary);">[Your Name]</h2>
-                <p style="margin:5px 0 0 0; color:#555;"><strong>Contact:</strong> <span id="displayContact"></span></p>
-            </div>
-            <div class="meta-info" style="text-align: right;">
-                <h3 id="displayInvNum" style="margin:0; font-size: 1.2rem;">INVOICE</h3>
-                <p style="margin:5px 0 0 0;"><strong>Client:</strong> <span id="displayClient"></span></p>
-                <p style="margin:2px 0 0 0;"><strong>Rate:</strong> <span id="displayRate"></span>/hr</p>
-                <p style="margin:2px 0 0 0;"><strong>Issued:</strong> <span id="issueDate"></span></p>
-            </div>
-        </header>
+    <div class="input-row">
+        </div>
 
-        <div id="tasksContainer"></div>
+    <hr>
 
-        <footer class="invoice-footer">
-            <div class="total-box">
-                <span>Grand Total Due:</span>
-                <span id="totalDisplay">$0.00</span>
-            </div>
-        </footer>
+    <div class="toolbar">
+        <button class="btn-print" onclick="window.print()">Print / PDF</button>
+        <button class="btn-secondary" onclick="exportData()">💾 Backup JSON</button>
+        <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Restore Backup</button>
+        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+        <button class="btn-clear" onclick="archiveMonth()">📁 Archive & Close Month</button>
+        <button class="btn-clear" onclick="clearInvoice()">Clear All</button>
+        <button id="btn-undo" class="btn-undo" style="display:none;" onclick="undoClear()">Undo</button>
     </div>
 </div>
-
-<script src="script.js"></script>
-</body>
-</html>
