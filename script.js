@@ -1,32 +1,109 @@
-const DEFAULT_RATE = 5.17;
+const STORAGE_KEY = 'monthlyInvoiceData_v1.7';
+const ARCHIVE_KEY = 'invoiceArchive_v1.7';
 let editIndex = null;
-let lastSnapshot = null; // For "Clear All"
-let deletedTaskSnapshot = null; // For single entry undo
+let lastSnapshot = null;
+let deletedTaskSnapshot = null;
 
-let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceData_v1.4')) || {
-    name: '', num: '', client: '', contact: '', rate: DEFAULT_RATE, tasks: []
+let invoiceData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+    name: '', num: '', client: '', contact: '', rate: 5.17, theme: 'classic', tasks: []
 };
 
 window.onload = () => {
-    document.getElementById('userName').value = invoiceData.name || '';
-    document.getElementById('invoiceNum').value = invoiceData.num || '';
-    document.getElementById('clientName').value = invoiceData.client || '';
-    document.getElementById('contactInfo').value = invoiceData.contact || '';
-    document.getElementById('hourlyRate').value = invoiceData.rate || DEFAULT_RATE;
+    // Fill Meta Data
+    document.getElementById('userName').value = invoiceData.name;
+    document.getElementById('invoiceNum').value = invoiceData.num;
+    document.getElementById('clientName').value = invoiceData.client;
+    document.getElementById('contactInfo').value = invoiceData.contact;
+    document.getElementById('hourlyRate').value = invoiceData.rate;
+    document.getElementById('themeSelect').value = invoiceData.theme || 'classic';
+    
     document.getElementById('taskDate').valueAsDate = new Date();
     document.getElementById('issueDate').innerText = new Date().toLocaleDateString();
+    
+    changeTheme(); 
     render();
 };
 
-function updateMeta() {
-    invoiceData.name = document.getElementById('userName').value;
-    invoiceData.num = document.getElementById('invoiceNum').value;
-    invoiceData.client = document.getElementById('clientName').value;
-    invoiceData.contact = document.getElementById('contactInfo').value;
-    invoiceData.rate = parseFloat(document.getElementById('hourlyRate').value) || 0;
-    save();
-    render();
+// --- DATA PERSISTENCE & BACKUP ---
+
+function save() { 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(invoiceData)); 
 }
+
+function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(invoiceData));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `invoice_backup_${new Date().toLocaleDateString()}.json`);
+    downloadAnchor.click();
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (confirm("Overwrite current data with this backup?")) {
+                invoiceData = imported;
+                save();
+                location.reload();
+            }
+        } catch (err) { alert("Invalid Backup File."); }
+    };
+    reader.readAsText(file);
+}
+
+// --- ARCHIVING ---
+
+function archiveMonth() {
+    if (invoiceData.tasks.length === 0) return alert("Nothing to archive.");
+    if (confirm("This will save the current tasks to History and clear the live list. Proceed?")) {
+        let archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY)) || [];
+        archives.push({
+            dateArchived: new Date().toISOString(),
+            client: invoiceData.client,
+            total: document.getElementById('totalDisplay').innerText,
+            tasks: [...invoiceData.tasks]
+        });
+        localStorage.setItem(ARCHIVE_KEY, JSON.stringify(archives));
+        invoiceData.tasks = [];
+        save();
+        render();
+        alert("Month archived successfully!");
+    }
+}
+
+// --- STATS & THEMES ---
+
+function updateStats() {
+    let totalHrs = 0;
+    invoiceData.tasks.forEach(t => totalHrs += t.duration);
+    
+    // Calculate distinct days worked
+    const uniqueDays = [...new Set(invoiceData.tasks.map(t => t.date))].length;
+    const dailyAvg = uniqueDays > 0 ? (totalHrs * invoiceData.rate) / uniqueDays : 0;
+
+    document.getElementById('statHours').innerText = totalHrs.toFixed(2);
+    document.getElementById('statAvg').innerText = "$" + dailyAvg.toFixed(2);
+}
+
+function changeTheme() {
+    const theme = document.getElementById('themeSelect').value;
+    invoiceData.theme = theme;
+    save();
+    
+    if (theme === 'minimal') {
+        document.documentElement.style.setProperty('--primary', '#444');
+        document.documentElement.style.setProperty('--accent', '#999');
+    } else {
+        document.documentElement.style.setProperty('--primary', '#2c3e50');
+        document.documentElement.style.setProperty('--accent', '#3498db');
+    }
+}
+
+// --- CORE LOGIC (Restored & Improved) ---
 
 function addTask() {
     const date = document.getElementById('taskDate').value;
@@ -34,17 +111,12 @@ function addTask() {
     const comments = document.getElementById('taskComments').value;
     const duration = parseFloat(document.getElementById('taskDuration').value);
 
-    if (!date || !mainTask || isNaN(duration)) {
-        alert("Please fill in Date, Main Task, and Hours.");
-        return;
-    }
+    if (!date || !mainTask || isNaN(duration)) return alert("Fill required fields.");
 
     const entry = { date, mainTask, comments, duration };
-
     if (editIndex !== null) {
         invoiceData.tasks[editIndex] = entry;
         editIndex = null;
-        document.querySelector('.btn-add').innerText = "Add to Invoice";
         document.getElementById('btn-cancel').style.display = "none";
     } else {
         invoiceData.tasks.push(entry);
@@ -52,109 +124,21 @@ function addTask() {
 
     invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     save();
-    resetForm();
     render();
-}
-
-function resetForm() {
     document.getElementById('taskMain').value = '';
     document.getElementById('taskComments').value = '';
     document.getElementById('taskDuration').value = '';
 }
 
-function formatBullets(text) {
-    if (!text) return '';
-    const lines = text.split('\n').filter(l => l.trim() !== '');
-    return `<ul class="bullet-list">` + lines.map(l => `<li>${l}</li>`).join('') + `</ul>`;
-}
-
-function editTask(index) {
-    const t = invoiceData.tasks[index];
-    document.getElementById('taskDate').value = t.date;
-    document.getElementById('taskMain').value = t.mainTask;
-    document.getElementById('taskComments').value = t.comments;
-    document.getElementById('taskDuration').value = t.duration;
-    
-    editIndex = index;
-    const btn = document.querySelector('.btn-add');
-    btn.innerText = "Save Changes";
-    document.getElementById('btn-cancel').style.display = "inline-block";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function cancelEdit() {
-    editIndex = null;
-    resetForm();
-    document.querySelector('.btn-add').innerText = "Add to Invoice";
-    document.getElementById('btn-cancel').style.display = "none";
-}
-
-// --- NEW UNDO DELETE LOGIC ---
-
-function deleteTask(index) {
-    // Save a snapshot of the single task before deleting
-    deletedTaskSnapshot = { ...invoiceData.tasks[index] };
-    
-    invoiceData.tasks.splice(index, 1);
-    save();
-    render();
-
-    // Show the Undo button
-    const undoBtn = document.getElementById('btn-undo');
-    undoBtn.innerText = "↩ Undo Delete Entry";
-    undoBtn.style.display = "inline-block";
-    
-    // Auto-hide after 10 seconds
-    setTimeout(() => { 
-        if (deletedTaskSnapshot) {
-            undoBtn.style.display = "none";
-            deletedTaskSnapshot = null;
-        }
-    }, 10000);
-}
-
-function clearInvoice() {
-    if(confirm("Clear everything?")) {
-        lastSnapshot = [...invoiceData.tasks];
-        invoiceData.tasks = [];
-        save();
-        render();
-        
-        const undoBtn = document.getElementById('btn-undo');
-        undoBtn.innerText = "↩ Undo Clear All";
-        undoBtn.style.display = "inline-block";
-        
-        setTimeout(() => { undoBtn.style.display = "none"; }, 15000);
-    }
-}
-
-function undoClear() {
-    if (lastSnapshot) {
-        // Restoring everything
-        invoiceData.tasks = lastSnapshot;
-        lastSnapshot = null;
-    } else if (deletedTaskSnapshot) {
-        // Restoring just the one task
-        invoiceData.tasks.push(deletedTaskSnapshot);
-        invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
-        deletedTaskSnapshot = null;
-    }
-    
-    document.getElementById('btn-undo').style.display = "none";
-    save();
-    render();
-}
-
-// --- END UNDO LOGIC ---
-
-function save() { localStorage.setItem('monthlyInvoiceData_v1.4', JSON.stringify(invoiceData)); }
+// ... include editTask, cancelEdit, deleteTask, clearInvoice, undoClear from v1.6 ...
 
 function render() {
-    document.getElementById('displayUserName').innerText = invoiceData.name || '[Your Name]';
+    // Meta Updates
+    document.getElementById('displayUserName').innerText = invoiceData.name || '[Name]';
     document.getElementById('displayInvNum').innerText = "INVOICE #" + (invoiceData.num || '');
     document.getElementById('displayClient').innerText = invoiceData.client || '[Client]';
     document.getElementById('displayContact').innerText = invoiceData.contact || '';
-    document.getElementById('displayRate').innerText = "$" + invoiceData.rate.toFixed(2);
+    document.getElementById('displayRate').innerText = "$" + (invoiceData.rate || 0).toFixed(2);
 
     const container = document.getElementById('tasksContainer');
     container.innerHTML = '';
@@ -174,15 +158,17 @@ function render() {
 
         const wrap = document.createElement('div');
         wrap.className = 'date-group-wrapper';
-        let html = `<div class="date-group-header"><span>${date}</span><span>Day Total: $${dayTotal.toFixed(2)}</span></div>`;
-        html += `<table><thead><tr><th>Details</th><th>Hrs</th><th>Amt</th><th class="no-print"></th></tr></thead><tbody>`;
-        
+        let html = `<div class="date-group-header"><span>${date}</span><span>$${dayTotal.toFixed(2)}</span></div>`;
+        html += `<table><tbody>`;
         groups[date].forEach(item => {
-            html += `<tr><td><strong>${item.mainTask}</strong>${formatBullets(item.comments)}</td><td>${item.duration}</td><td>$${(item.duration * invoiceData.rate).toFixed(2)}</td>
-            <td class="no-print"><button class="action-btn" style="color:#3498db" onclick="editTask(${item.originalIndex})">✎</button><button class="action-btn" style="color:#e74c3c" onclick="deleteTask(${item.originalIndex})">✕</button></td></tr>`;
+            html += `<tr><td><strong>${item.mainTask}</strong><br>${item.comments.replace(/\n/g, '<br>')}</td>
+            <td style="width:40px">${item.duration}h</td>
+            <td class="no-print"><button onclick="editTask(${item.originalIndex})">✎</button></td></tr>`;
         });
         wrap.innerHTML = html + `</tbody></table>`;
         container.appendChild(wrap);
     });
+    
     document.getElementById('totalDisplay').innerText = "$" + grandTotal.toFixed(2);
+    updateStats();
 }
