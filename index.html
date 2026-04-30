@@ -9,11 +9,10 @@
 <body>
 
 <div class="container">
-    <!-- EDITOR SECTION (Hidden on PDF) -->
     <div class="no-print">
         <h1>Invoice Manager</h1>
         <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">
-            Complete the fields below to personalize your invoice.
+            Configure your professional branding and log tasks below.
         </p>
         
         <div class="input-row">
@@ -61,8 +60,9 @@
         </div>
         <div class="log-row">
             <div class="field">
-                <label>Additional Comments (Enter for new bullet point)</label>
-                <textarea id="taskComments" placeholder="• Detailed note 1&#10;• Detailed note 2" rows="3"></textarea>
+                <label>Additional Comments</label>
+                <textarea id="taskComments" placeholder="• Detailed note 1&#10;• Detailed note 2" rows="4"></textarea>
+                <button type="button" onclick="refineTasks()" style="margin-top: 8px; background: #6c5ce7; color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 0.75rem; width: fit-content; font-weight: bold;">✨ Professional Polish</button>
             </div>
             <div class="field action" style="max-width: 250px;">
                 <label>&nbsp;</label>
@@ -80,7 +80,6 @@
         </div>
     </div>
 
-    <!-- INVOICE VIEW -->
     <div id="invoice-view">
         <header class="invoice-header">
             <div class="user-info">
