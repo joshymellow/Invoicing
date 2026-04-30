@@ -35,52 +35,47 @@ function refineTasks() {
     let text = commEl.value;
     if (!text) return;
 
-    // 1. Corporate Dictionary (Updated for better matching)
+    // 1. Strip ALL existing bullets/symbols/spaces from the start of every line
+    let lines = text.split('\n').map(line => {
+        return line.replace(/^[^a-zA-Z0-9]+/, '').trim();
+    }).filter(l => l !== "");
+
+    // 2. Define the Corporate Swaps
     const upgrades = [
-        { find: /fixed/gi, replace: "Resolved" },
-        { find: /helped/gi, replace: "Assisted with" },
-        { find: /started/gi, replace: "Initiated" },
-        { find: /finished/gi, replace: "Completed" },
-        { find: /talked to/gi, replace: "Liaised with" },
-        { find: /emailed/gi, replace: "Corresponded with" },
-        { find: /changed/gi, replace: "Updated" },
-        { find: /made/gi, replace: "Developed" },
-        { find: /checked/gi, replace: "Reviewed" },
-        { find: /looked at/gi, replace: "Analyzed" },
-        { find: /worked on/gi, replace: "Focused on" },
-        { find: /bug/gi, replace: "technical issue" },
-        { find: /stuff/gi, replace: "requirements" },
-        { find: /website/gi, replace: "web platform" }
+        { f: /create/gi, r: "Architected" },
+        { f: /research/gi, r: "Conducted technical analysis of" },
+        { f: /launch/gi, r: "Deployed" },
+        { f: /make/gi, r: "Developed" },
+        { f: /website/gi, r: "web platform" },
+        { f: /fixed/gi, r: "Resolved" },
+        { f: /talked to/gi, r: "Liaised with" },
+        { f: /stuff/gi, r: "project requirements" },
+        { f: /tool/gi, r: "infrastructure" }
     ];
 
-    // 2. Apply word swaps
-    upgrades.forEach(item => {
-        text = text.replace(item.find, item.replace);
-    });
+    // 3. Process the lines without adding bullets back
+    const polishedLines = lines.map(line => {
+        let newLine = line;
+        
+        upgrades.forEach(u => {
+            newLine = newLine.replace(u.f, u.r);
+        });
 
-    // 3. The "Deep Clean" for bullets
-    let lines = text.split('\n').filter(l => l.trim() !== '');
-    lines = lines.map(line => {
-        let cleanLine = line.trim();
-        
-        // Remove ANY existing bullets, dashes, or dots at the start
-        // This stops the "double bullet" issue seen in your screenshot
-        cleanLine = cleanLine.replace(/^[•\-\*\s·]+/, '').trim();
-        
-        // Capitalize first letter
-        if (cleanLine.length > 0) {
-            cleanLine = cleanLine.charAt(0).toUpperCase() + cleanLine.slice(1);
+        // Capitalize the first letter for a clean look
+        if (newLine.length > 0) {
+            newLine = newLine.charAt(0).toUpperCase() + newLine.slice(1);
         }
-        
-        return '• ' + cleanLine;
+        return newLine; // Returning plain text (no bullet)
     });
 
-    commEl.value = lines.join('\n');
+    // 4. Update the textarea
+    commEl.value = polishedLines.join('\n');
     
-    // Visual feedback
+    // Feedback "Flash"
     commEl.style.backgroundColor = "#e8f5e9";
     setTimeout(() => { commEl.style.backgroundColor = "white"; }, 300);
 }
+
 function addTask() {
     const date = document.getElementById('taskDate').value;
     const main = document.getElementById('taskMain').value;
