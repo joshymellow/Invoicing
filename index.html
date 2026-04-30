@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Monthly Invoice</title>
+    <title>Work Log System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -37,14 +37,20 @@
                 <input type="date" id="taskDate">
             </div>
             <div class="field">
-                <label>Description</label>
-                <input type="text" id="taskDesc" placeholder="What did you do?">
+                <label>Main Task</label>
+                <input type="text" id="taskMain" placeholder="Task title">
             </div>
             <div class="field">
                 <label>Hours</label>
                 <input type="number" id="taskDuration" placeholder="0.0" step="0.25">
             </div>
-            <div class="field action">
+        </div>
+        <div class="log-row">
+            <div class="field">
+                <label>Additional Comments</label>
+                <input type="text" id="taskComments" placeholder="Detailed notes (optional)">
+            </div>
+            <div class="field action" style="max-width: 200px;">
                 <label>&nbsp;</label>
                 <button class="btn-add" onclick="addTask()">Add to Invoice</button>
             </div>
@@ -64,13 +70,14 @@
                 <p id="displayClient">To: [Client Name]</p>
             </div>
             <div class="meta-info">
+                <p><strong>Contact:</strong> codornizjoshuaisaiah@gmail.com</p>
                 <p><strong>Rate:</strong> <span id="displayRate"></span>/hr</p>
                 <p><strong>Issued:</strong> <span id="issueDate"></span></p>
             </div>
         </header>
 
         <div id="tasksContainer">
-            <!-- Grouped items will be injected here by script.js -->
+            <!-- Grouped items with daily subtotals will be injected here -->
         </div>
 
         <footer class="invoice-footer">
