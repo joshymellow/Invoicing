@@ -73,21 +73,37 @@ function archiveMonth() {
 // --- HISTORY UI ---
 function toggleHistory() {
     const modal = document.getElementById('historyModal');
-    const isVisible = modal.style.display === 'flex';
-    modal.style.display = isVisible ? 'none' : 'flex';
-    if (!isVisible) renderHistory();
+    // Check current display style
+    const currentDisplay = window.getComputedStyle(modal).display;
+    
+    if (currentDisplay === 'none') {
+        modal.style.display = 'flex';
+        renderHistory();
+    } else {
+        modal.style.display = 'none';
+    }
 }
 
 function renderHistory() {
     const archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY)) || [];
     const list = document.getElementById('historyList');
+    
     if (archives.length === 0) {
-        list.innerHTML = "<p style='text-align:center; color:#999;'>Your history is empty.</p>";
+        list.innerHTML = "<p style='text-align:center; color:#999; padding: 20px;'>Your history is empty.</p>";
         return;
     }
-    list.innerHTML = archives.map((item, index) => `
+
+    // Header with Clear All button
+    let html = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding: 0 10px;">
+            <span style="font-size:0.8rem; color:#666;">${archives.length} records found</span>
+            <button onclick="clearAllHistory()" style="background:#fceaea; color:#e74c3c; font-size:0.7rem; padding:4px 8px;">Clear All History</button>
+        </div>
+    `;
+
+    html += archives.map((item, index) => `
         <div class="history-item">
-            <div>
+            <div style="flex:1;">
                 <strong>${item.client || 'Unnamed Client'}</strong><br>
                 <small>${new Date(item.archivedAt).toLocaleDateString()}</small>
             </div>
@@ -98,11 +114,20 @@ function renderHistory() {
             </div>
         </div>
     `).reverse().join('');
+    
+    list.innerHTML = html;
+}
+
+function clearAllHistory() {
+    if (confirm("Are you sure you want to permanently delete ALL history records? This cannot be undone.")) {
+        localStorage.removeItem(ARCHIVE_KEY);
+        renderHistory();
+    }
 }
 
 function restoreArchive(index) {
+    const archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY)) || [];
     if (confirm("Restoring this will replace your current live data. Continue?")) {
-        const archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY));
         invoiceData.tasks = archives[index].tasks;
         invoiceData.client = archives[index].client;
         save();
@@ -113,8 +138,11 @@ function restoreArchive(index) {
 
 function deleteArchive(index) {
     if (confirm("Permanently delete this record?")) {
-        let archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY));
-        archives.splice(index, 1);
+        let archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY)) || [];
+        // Since we render reversed, we need to adjust the index or just use the original array
+        // Re-getting to be safe and splicing from the end
+        const actualIndex = archives.length - 1 - index;
+        archives.splice(actualIndex, 1);
         localStorage.setItem(ARCHIVE_KEY, JSON.stringify(archives));
         renderHistory();
     }
