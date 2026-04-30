@@ -1,26 +1,33 @@
+/* script.js */
 const DEFAULT_RATE = 5.17;
 let editIndex = null;
 let lastSnapshot = null;
 
-let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceData_Final')) || {
+let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceData_v1.4')) || {
+    name: '',
     num: '',
     client: '',
+    contact: 'codornizjoshuaisaiah@gmail.com',
     rate: DEFAULT_RATE,
     tasks: []
 };
 
 window.onload = () => {
-    document.getElementById('invoiceNum').value = invoiceData.num;
-    document.getElementById('clientName').value = invoiceData.client;
-    document.getElementById('hourlyRate').value = invoiceData.rate;
+    document.getElementById('userName').value = invoiceData.name || '';
+    document.getElementById('invoiceNum').value = invoiceData.num || '';
+    document.getElementById('clientName').value = invoiceData.client || '';
+    document.getElementById('contactInfo').value = invoiceData.contact || '';
+    document.getElementById('hourlyRate').value = invoiceData.rate || DEFAULT_RATE;
     document.getElementById('taskDate').valueAsDate = new Date();
     document.getElementById('issueDate').innerText = new Date().toLocaleDateString();
     render();
 };
 
 function updateMeta() {
+    invoiceData.name = document.getElementById('userName').value;
     invoiceData.num = document.getElementById('invoiceNum').value;
     invoiceData.client = document.getElementById('clientName').value;
+    invoiceData.contact = document.getElementById('contactInfo').value;
     invoiceData.rate = parseFloat(document.getElementById('hourlyRate').value) || 0;
     save();
     render();
@@ -78,7 +85,7 @@ function editTask(index) {
     editIndex = index;
     const btn = document.querySelector('.btn-add');
     btn.innerText = "Save Changes";
-    btn.style.background = "#f39c12"; // Warning color
+    btn.style.background = "#f39c12"; 
     document.getElementById('btn-cancel').style.display = "inline-block";
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -102,14 +109,14 @@ function deleteTask(index) {
 
 function clearInvoice() {
     if(confirm("Are you sure? This will delete all monthly logs.")) {
-        lastSnapshot = [...invoiceData.tasks]; // Save backup
+        lastSnapshot = [...invoiceData.tasks];
         invoiceData.tasks = [];
         save();
         render();
         
         const undoBtn = document.getElementById('btn-undo');
         undoBtn.style.display = "inline-block";
-        setTimeout(() => { undoBtn.style.display = "none"; }, 20000); // 20 second window
+        setTimeout(() => { undoBtn.style.display = "none"; }, 20000);
     }
 }
 
@@ -123,11 +130,13 @@ function undoClear() {
     }
 }
 
-function save() { localStorage.setItem('monthlyInvoiceData_Final', JSON.stringify(invoiceData)); }
+function save() { localStorage.setItem('monthlyInvoiceData_v1.4', JSON.stringify(invoiceData)); }
 
 function render() {
+    document.getElementById('displayUserName').innerText = invoiceData.name || '[Your Name / Company]';
     document.getElementById('displayInvNum').innerText = invoiceData.num ? `INVOICE #${invoiceData.num}` : 'INVOICE';
-    document.getElementById('displayClient').innerText = `To: ${invoiceData.client || '[Client Name]'}`;
+    document.getElementById('displayClient').innerText = invoiceData.client || '[Client Name]';
+    document.getElementById('displayContact').innerText = invoiceData.contact || 'No Contact Info';
     document.getElementById('displayRate').innerText = `$${invoiceData.rate.toFixed(2)}`;
 
     const container = document.getElementById('tasksContainer');
