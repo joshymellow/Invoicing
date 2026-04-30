@@ -1,3 +1,4 @@
+/* style.css */
 :root {
     --primary: #2c3e50;
     --accent: #3498db;
@@ -55,7 +56,7 @@ button {
 .btn-undo { background: #6c5ce7; color: white; }
 
 .invoice-header {
-    display: flex; justify-content: space-between;
+    display: flex; justify-content: space-between; align-items: flex-start;
     border-bottom: 3px solid var(--primary);
     padding-bottom: 20px; margin-bottom: 30px;
 }
