@@ -1,6 +1,6 @@
 # 📜 Project History & Changelog: Work Log & Invoice Manager
 
-This document tracks the evolution of the Professional Work Log & Invoice Manager, from its initial concept to the current stable build.
+This document tracks the evolution of the Professional Work Log & Invoice Manager, from its initial concept to the current high-stability build.
 
 ---
 
@@ -21,41 +21,42 @@ This document tracks the evolution of the Professional Work Log & Invoice Manage
 
 ## [1.2.0] - Professional Print & Layout
 **"The Invoice Transition"**
-* **Print Media Queries:** Added CSS `@media print` rules to hide the input forms and buttons when printing.
-* **Grouped by Date:** Updated the logic to automatically group multiple tasks under a single date header.
-* **Legal Size Support:** Adjusted the container width and margins to support **8.5" x 14" (Legal)** paper layouts.
+* **Print Media Queries:** Added CSS `@media print` rules to hide input forms and buttons during export.
+* **Grouped by Date:** Updated logic to group multiple tasks under a single date header.
+* **Legal Size Support:** Adjusted container width and margins to support **8.5" x 14" (Legal)** paper layouts.
 
 ---
 
 ## [1.3.0] - Dynamic Meta Data
 **"The Client Update"**
 * **User/Client Fields:** Added inputs for "Invoice Number," "Client Name," and "Hourly Rate" directly in the UI.
-* **Real-time Updates:** Linked these fields to the render function so the invoice header updates instantly as you type.
+* **Real-time Updates:** Linked fields to the render function for instant header updates.
 
 ---
 
 ## [1.4.0] - Branding & Safety Nets
 **"The Professional Build"**
 * **Self-Branding:** Added "Your Name / Company" and "Contact Info" fields that save permanently.
-* **Edit/Undo Logic:** Introduced the ability to edit existing entries and a 15-second "Undo" window after clearing the invoice.
-* **The Default Rate:** Hardcoded the specific **$5.17** rate as the starting default.
+* **Edit Function:** Introduced the ability to modify existing entries via a pencil icon.
+* **Global Undo:** Added a 15-second window to restore data after "Clear All."
 
 ---
 
 ## [1.5.0] - The AI "Polish" Experiment (REMOVED)
 **"The Corporate Pivot"**
 * **The Feature:** Attempted to add a **✨ Professional Polish** button to swap casual words for corporate ones.
-* **The Conflict:** Discovered that automated text manipulation caused "double bullet points" and occasional script crashes.
-* **The Decision:** Opted to **Roll Back** this feature to preserve 100% reliability and manual control over task descriptions.
+* **The Conflict:** Automated text manipulation caused "double bullet points" and script crashes.
+* **The Decision:** **Rolled Back** this feature to preserve 100% reliability and manual control.
 
 ---
 
-## [1.5.1] - Final Stabilization (Current Version)
-**"The Bulletproof Build"**
-* **Code Hardening:** Removed all experimental "Polish" logic to ensure the "Add to Invoice" button functions with a 100% success rate.
-* **UI Optimization:** Cleaned up the "Additional Comments" box to emphasize plain-text entry.
-* **Final Key Sync:** Locked the system to the stable `v1.4` storage key.
+## [1.6.0] - UX & Print Refinement (Current Version)
+**"The Quality of Life Update"**
+* **Individual Undo Delete:** Implemented a "Trash Bin" logic. Deleting a single entry now triggers a 10-second "Undo Delete" button.
+* **Restored Edit Controls:** Fixed a bug where the "Cancel Edit" button failed to appear during task modification.
+* **Clean PDF Export:** Optimized layout instructions to guide users in removing browser-generated headers/footers (GitHub URL and page titles) from PDF exports.
+* **Code Hardening:** Consolidated logic into a single robust engine using the stable `v1.4` storage key.
 
 ---
 
-**Status:** *Maintenance Mode. Optimized for reliability, speed, and professional manual entry.*
+**Status:** *Maintenance Mode. Optimized for reliability, professional manual entry, and clean legal-size PDF exports.*
