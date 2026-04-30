@@ -1,5 +1,5 @@
-const STORAGE_KEY = 'monthlyInvoiceData_v1.7';
-const ARCHIVE_KEY = 'invoiceArchive_v1.7';
+const STORAGE_KEY = 'monthlyInvoiceData_v1.8';
+const ARCHIVE_KEY = 'invoiceArchive_v1.8';
 let editIndex = null;
 let lastSnapshot = null;
 let deletedTaskSnapshot = null;
@@ -30,7 +30,7 @@ function exportData() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(invoiceData));
     const dl = document.createElement('a');
     dl.setAttribute("href", dataStr);
-    dl.setAttribute("download", `Backup_${new Date().toLocaleDateString()}.json`);
+    dl.setAttribute("download", `Invoice_Backup_${new Date().toLocaleDateString()}.json`);
     dl.click();
 }
 
@@ -41,12 +41,12 @@ function importData(event) {
     reader.onload = (e) => {
         try {
             const imported = JSON.parse(e.target.result);
-            if (confirm("Restore this backup? This will overwrite current live logs.")) {
+            if (confirm("Restore this backup? This will overwrite your current screen.")) {
                 invoiceData = imported;
                 save();
                 location.reload();
             }
-        } catch (err) { alert("Invalid backup file."); }
+        } catch (err) { alert("Invalid backup file format."); }
     };
     reader.readAsText(file);
 }
@@ -54,7 +54,7 @@ function importData(event) {
 // --- ARCHIVING ---
 function archiveMonth() {
     if (invoiceData.tasks.length === 0) return alert("No tasks to archive.");
-    if (confirm("Close Month? This archives current tasks and clears the live list.")) {
+    if (confirm("Close Month? This archives current tasks to history and clears your current invoice.")) {
         let archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY)) || [];
         archives.push({
             archivedAt: new Date().toISOString(),
@@ -66,7 +66,57 @@ function archiveMonth() {
         invoiceData.tasks = [];
         save();
         render();
-        alert("Saved to history!");
+        alert("Invoice moved to History.");
+    }
+}
+
+// --- HISTORY UI ---
+function toggleHistory() {
+    const modal = document.getElementById('historyModal');
+    const isVisible = modal.style.display === 'flex';
+    modal.style.display = isVisible ? 'none' : 'flex';
+    if (!isVisible) renderHistory();
+}
+
+function renderHistory() {
+    const archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY)) || [];
+    const list = document.getElementById('historyList');
+    if (archives.length === 0) {
+        list.innerHTML = "<p style='text-align:center; color:#999;'>Your history is empty.</p>";
+        return;
+    }
+    list.innerHTML = archives.map((item, index) => `
+        <div class="history-item">
+            <div>
+                <strong>${item.client || 'Unnamed Client'}</strong><br>
+                <small>${new Date(item.archivedAt).toLocaleDateString()}</small>
+            </div>
+            <div style="text-align:right">
+                <div style="font-weight:bold; color:var(--primary);">${item.total}</div>
+                <button class="action-btn" style="color:var(--accent); font-size:0.75rem;" onclick="restoreArchive(${index})">Restore</button>
+                <button class="action-btn" style="color:#e74c3c; font-size:0.75rem;" onclick="deleteArchive(${index})">Delete</button>
+            </div>
+        </div>
+    `).reverse().join('');
+}
+
+function restoreArchive(index) {
+    if (confirm("Restoring this will replace your current live data. Continue?")) {
+        const archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY));
+        invoiceData.tasks = archives[index].tasks;
+        invoiceData.client = archives[index].client;
+        save();
+        render();
+        toggleHistory();
+    }
+}
+
+function deleteArchive(index) {
+    if (confirm("Permanently delete this record?")) {
+        let archives = JSON.parse(localStorage.getItem(ARCHIVE_KEY));
+        archives.splice(index, 1);
+        localStorage.setItem(ARCHIVE_KEY, JSON.stringify(archives));
+        renderHistory();
     }
 }
 
@@ -87,7 +137,7 @@ function addTask() {
     const comm = document.getElementById('taskComments').value;
     const dur = parseFloat(document.getElementById('taskDuration').value);
 
-    if (!date || !main || isNaN(dur)) return alert("Missing entry details.");
+    if (!date || !main || isNaN(dur)) return alert("Please fill in Date, Task, and Hours.");
 
     const entry = { date, mainTask: main, comments: comm, duration: dur };
 
@@ -102,10 +152,14 @@ function addTask() {
 
     invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     save();
+    resetForm();
+    render();
+}
+
+function resetForm() {
     document.getElementById('taskMain').value = '';
     document.getElementById('taskComments').value = '';
     document.getElementById('taskDuration').value = '';
-    render();
 }
 
 function editTask(index) {
@@ -117,13 +171,14 @@ function editTask(index) {
     editIndex = index;
     document.querySelector('.btn-add').innerText = "Save Changes";
     document.getElementById('btn-cancel').style.display = "inline-block";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function cancelEdit() {
     editIndex = null;
+    resetForm();
     document.querySelector('.btn-add').innerText = "Add to Invoice";
     document.getElementById('btn-cancel').style.display = "none";
-    document.getElementById('taskMain').value = '';
 }
 
 function deleteTask(index) {
@@ -132,13 +187,13 @@ function deleteTask(index) {
     save();
     render();
     const ub = document.getElementById('btn-undo');
-    ub.innerText = "↩ Undo Delete";
+    ub.innerText = "↩ Undo Delete Entry";
     ub.style.display = "inline-block";
     setTimeout(() => { ub.style.display = "none"; deletedTaskSnapshot = null; }, 10000);
 }
 
 function clearInvoice() {
-    if(confirm("Clear all logs?")) {
+    if(confirm("Permanently clear all active tasks?")) {
         lastSnapshot = [...invoiceData.tasks];
         invoiceData.tasks = [];
         save();
@@ -174,6 +229,12 @@ function changeTheme() {
     }
 }
 
+function formatBullets(text) {
+    if (!text) return '';
+    const lines = text.split('\n').filter(l => l.trim() !== '');
+    return `<ul class="bullet-list">` + lines.map(l => `<li>${l}</li>`).join('') + `</ul>`;
+}
+
 function render() {
     document.getElementById('displayUserName').innerText = invoiceData.name || '[Your Name]';
     document.getElementById('displayInvNum').innerText = "INVOICE #" + (invoiceData.num || '');
@@ -201,15 +262,15 @@ function render() {
 
         const wrap = document.createElement('div');
         wrap.className = 'date-group-wrapper';
-        let html = `<div class="date-group-header"><span>${date}</span><span>$${dayTotal.toFixed(2)}</span></div>`;
+        let html = `<div class="date-group-header"><span>${date}</span><span>Day: $${dayTotal.toFixed(2)}</span></div>`;
         html += `<table><tbody>`;
         groups[date].forEach(item => {
             html += `<tr>
-                <td><strong>${item.mainTask}</strong><br><small>${item.comments.replace(/\n/g, '<br>')}</small></td>
+                <td><strong>${item.mainTask}</strong>${formatBullets(item.comments)}</td>
                 <td style="width:50px">${item.duration}h</td>
-                <td class="no-print" style="width:60px">
-                    <button class="action-btn" onclick="editTask(${item.originalIndex})">✎</button>
-                    <button class="action-btn" onclick="deleteTask(${item.originalIndex})">✕</button>
+                <td class="no-print" style="width:70px; text-align:right;">
+                    <button class="action-btn" style="color:var(--accent)" onclick="editTask(${item.originalIndex})">✎</button>
+                    <button class="action-btn" style="color:#e74c3c" onclick="deleteTask(${item.originalIndex})">✕</button>
                 </td>
             </tr>`;
         });
@@ -219,7 +280,6 @@ function render() {
 
     document.getElementById('totalDisplay').innerText = "$" + grandTotal.toFixed(2);
     
-    // Update Stats
     const uniqueDays = [...new Set(invoiceData.tasks.map(t => t.date))].length;
     document.getElementById('statHours').innerText = totalHrs.toFixed(2);
     document.getElementById('statTasks').innerText = invoiceData.tasks.length;
