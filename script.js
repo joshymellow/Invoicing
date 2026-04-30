@@ -1,7 +1,7 @@
 const DEFAULT_RATE = 5.17;
 let editIndex = null;
 
-let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV3')) || {
+let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV4')) || {
     num: '',
     client: '',
     rate: DEFAULT_RATE,
@@ -9,9 +9,9 @@ let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV3')) || {
 };
 
 window.onload = () => {
-    document.getElementById('invoiceNum').value = invoiceData.num || '';
-    document.getElementById('clientName').value = invoiceData.client || '';
-    document.getElementById('hourlyRate').value = invoiceData.rate || DEFAULT_RATE;
+    document.getElementById('invoiceNum').value = invoiceData.num;
+    document.getElementById('clientName').value = invoiceData.client;
+    document.getElementById('hourlyRate').value = invoiceData.rate;
     document.getElementById('taskDate').valueAsDate = new Date();
     document.getElementById('issueDate').innerText = new Date().toLocaleDateString();
     render();
@@ -26,66 +26,57 @@ function updateMeta() {
 }
 
 function addTask() {
-    const dateEl = document.getElementById('taskDate');
-    const mainEl = document.getElementById('taskMain');
-    const commEl = document.getElementById('taskComments');
-    const durEl = document.getElementById('taskDuration');
-    const btnEl = document.querySelector('.btn-add');
-
-    const date = dateEl.value;
-    const mainTask = mainEl.value;
-    const comments = commEl.value; // This now captures multiple lines
-    const duration = parseFloat(durEl.value);
+    const date = document.getElementById('taskDate').value;
+    const mainTask = document.getElementById('taskMain').value;
+    const comments = document.getElementById('taskComments').value;
+    const duration = parseFloat(document.getElementById('taskDuration').value);
 
     if (!date || !mainTask || isNaN(duration)) {
         alert("Please fill in Date, Main Task, and Hours.");
         return;
     }
 
-    const newTask = { date, mainTask, comments, duration };
+    const entry = { date, mainTask, comments, duration };
 
     if (editIndex !== null) {
-        invoiceData.tasks[editIndex] = newTask;
+        invoiceData.tasks[editIndex] = entry;
         editIndex = null;
-        btnEl.innerText = "Add to Invoice";
-        btnEl.style.background = ""; 
+        document.querySelector('.btn-add').innerText = "Add to Invoice";
+        document.querySelector('.btn-add').style.background = "";
     } else {
-        invoiceData.tasks.push(newTask);
+        invoiceData.tasks.push(entry);
     }
-    
+
     invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     save();
     
-    mainEl.value = '';
-    commEl.value = '';
-    durEl.value = '';
+    document.getElementById('taskMain').value = '';
+    document.getElementById('taskComments').value = '';
+    document.getElementById('taskDuration').value = '';
     render();
 }
 
-// Helper to turn text lines into a bulleted list
 function formatBullets(text) {
     if (!text) return '';
-    const lines = text.split('\n').filter(line => line.trim() !== '');
-    if (lines.length === 0) return '';
-    return `<ul class="bullet-list">` + lines.map(line => `<li>${line}</li>`).join('') + `</ul>`;
+    const lines = text.split('\n').filter(l => l.trim() !== '');
+    return `<ul class="bullet-list">` + lines.map(l => `<li>${l}</li>`).join('') + `</ul>`;
 }
 
 function editTask(index) {
-    const task = invoiceData.tasks[index];
-    document.getElementById('taskDate').value = task.date;
-    document.getElementById('taskMain').value = task.mainTask;
-    document.getElementById('taskComments').value = task.comments;
-    document.getElementById('taskDuration').value = task.duration;
-
+    const t = invoiceData.tasks[index];
+    document.getElementById('taskDate').value = t.date;
+    document.getElementById('taskMain').value = t.mainTask;
+    document.getElementById('taskComments').value = t.comments;
+    document.getElementById('taskDuration').value = t.duration;
     editIndex = index;
-    const btnEl = document.querySelector('.btn-add');
-    btnEl.innerText = "Save Changes";
-    btnEl.style.background = "#f39c12"; 
+    const btn = document.querySelector('.btn-add');
+    btn.innerText = "Save Changes";
+    btn.style.background = "#f39c12";
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function deleteTask(index) {
-    if(confirm("Delete this entry?")) {
+    if(confirm("Delete entry?")) {
         invoiceData.tasks.splice(index, 1);
         save();
         render();
@@ -93,83 +84,46 @@ function deleteTask(index) {
 }
 
 function clearInvoice() {
-    if (confirm("Clear all tasks?")) {
+    if(confirm("Clear all data?")) {
         invoiceData.tasks = [];
         save();
         render();
     }
 }
 
-function save() {
-    localStorage.setItem('monthlyInvoiceDataV3', JSON.stringify(invoiceData));
-}
+function save() { localStorage.setItem('monthlyInvoiceDataV4', JSON.stringify(invoiceData)); }
 
 function render() {
     document.getElementById('displayInvNum').innerText = invoiceData.num ? `INVOICE #${invoiceData.num}` : 'INVOICE';
-    document.getElementById('displayClient').innerText = invoiceData.client ? `To: ${invoiceData.client}` : 'To: [Client Name]';
+    document.getElementById('displayClient').innerText = `To: ${invoiceData.client || '[Client Name]'}`;
     document.getElementById('displayRate').innerText = `$${invoiceData.rate.toFixed(2)}`;
 
     const container = document.getElementById('tasksContainer');
     container.innerHTML = '';
-    
     const groups = {};
-    invoiceData.tasks.forEach((task, index) => {
-        if (!groups[task.date]) groups[task.date] = [];
-        groups[task.date].push({ ...task, originalIndex: index });
+    invoiceData.tasks.forEach((t, i) => {
+        if(!groups[t.date]) groups[t.date] = [];
+        groups[t.date].push({...t, originalIndex: i});
     });
 
     let grandTotal = 0;
+    Object.keys(groups).sort().forEach(date => {
+        let dayHrs = 0;
+        groups[date].forEach(t => dayHrs += t.duration);
+        const dayTotal = dayHrs * invoiceData.rate;
+        grandTotal += dayTotal;
 
-    Object.keys(groups).sort().forEach(dateString => {
-        const dateObj = new Date(dateString + 'T00:00:00');
-        const formattedDate = dateObj.toLocaleDateString(undefined, { 
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-        });
-
-        let dailyHours = 0;
-        groups[dateString].forEach(t => dailyHours += t.duration);
-        const dailySubtotal = dailyHours * invoiceData.rate;
-        grandTotal += dailySubtotal;
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'date-group-wrapper';
+        const wrap = document.createElement('div');
+        wrap.className = 'date-group-wrapper';
+        let html = `<div class="date-group-header"><span>${new Date(date + 'T00:00:00').toLocaleDateString()}</span><span>Hours: ${dayHrs.toFixed(2)} | Day: $${dayTotal.toFixed(2)}</span></div>`;
+        html += `<table><thead><tr><th>Details</th><th>Hrs</th><th>Amt</th><th class="no-print"></th></tr></thead><tbody>`;
         
-        let html = `
-            <div class="date-group-header">
-                <span>${formattedDate}</span>
-                <span>Hours: ${dailyHours.toFixed(2)} | Day Total: $${dailySubtotal.toFixed(2)}</span>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 65%">Task Details</th>
-                        <th style="width: 10%">Hours</th>
-                        <th style="width: 15%">Amount</th>
-                        <th class="no-print" style="width: 10%"></th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-        groups[dateString].forEach(item => {
-            const lineTotal = item.duration * invoiceData.rate;
-            html += `
-                <tr>
-                    <td>
-                        <strong>${item.mainTask}</strong>
-                        ${formatBullets(item.comments)}
-                    </td>
-                    <td>${item.duration}</td>
-                    <td>$${lineTotal.toFixed(2)}</td>
-                    <td class="no-print">
-                        <button onclick="editTask(${item.originalIndex})" class="action-btn" style="color: #3498db;">✎</button>
-                        <button onclick="deleteTask(${item.originalIndex})" class="action-btn" style="color: #e74c3c;">✕</button>
-                    </td>
-                </tr>`;
+        groups[date].forEach(item => {
+            html += `<tr><td><strong>${item.mainTask}</strong>${formatBullets(item.comments)}</td><td>${item.duration}</td><td>$${(item.duration * invoiceData.rate).toFixed(2)}</td>
+            <td class="no-print"><button onclick="editTask(${item.originalIndex})">✎</button><button onclick="deleteTask(${item.originalIndex})">✕</button></td></tr>`;
         });
-
-        html += `</tbody></table>`;
-        wrapper.innerHTML = html;
-        container.appendChild(wrapper);
+        wrap.innerHTML = html + `</tbody></table>`;
+        container.appendChild(wrap);
     });
-
-    document.getElementById('totalDispla
+    document.getElementById('totalDisplay').innerText = `$${grandTotal.toFixed(2)}`;
+}
