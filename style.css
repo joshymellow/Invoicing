@@ -3,6 +3,7 @@
     --accent: #3498db;
     --success: #27ae60;
     --danger: #e74c3c;
+    --warning: #f39c12;
     --border: #dee2e6;
     --bg-light: #f8f9fa;
 }
@@ -50,6 +51,8 @@ button {
 .btn-add { background: var(--accent); color: white; }
 .btn-print { background: var(--success); color: white; }
 .btn-clear { background: var(--danger); color: white; }
+.btn-secondary { background: #95a5a6; color: white; }
+.btn-undo { background: #6c5ce7; color: white; }
 
 .invoice-header {
     display: flex; justify-content: space-between;
@@ -82,12 +85,8 @@ td { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; vertical-align: top; 
 
 .action-btn { border: none; background: none; cursor: pointer; font-size: 1.1rem; }
 
-/* PRINT SETTINGS FOR LEGAL SIZE */
 @media print {
-    @page {
-        size: legal;
-        margin: 0.5in;
-    }
+    @page { size: legal; margin: 0.5in; }
     body { background: white; padding: 0; }
     .container { box-shadow: none; border: none; padding: 0; max-width: 100%; width: 100%; }
     .no-print { display: none !important; }
