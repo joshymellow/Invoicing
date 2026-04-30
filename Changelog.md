@@ -1,34 +1,61 @@
-# Changelog
+📜 Project History & Changelog: Work Log & Invoice Manager
+This document tracks the evolution of the Professional Work Log & Invoice Manager, from its initial concept to the current stable build.
 
-All notable changes to the Work Log & Invoice Manager will be documented in this file.
+[1.0.0] - The MVP (Minimum Viable Product)
+"The Proof of Concept"
 
-## [1.3.0] - Master Branding Update - 2026-04-30
-### Added
-- **Your Name / Company Field:** The user can now input their own name or business name.
-- **Balanced Header Layout:** Redesigned the invoice header to look like high-end professional stationery.
-### Changed
-- Shifted meta-info (Invoice #, Client, Rate) to the right-hand side for better document flow.
+Basic Logging: Created the initial HTML structure to input a date, task, and duration.
 
-## [1.2.0] - Post-Release "Safety Net" Update - 2026-04-30
-### Added
-- **Undo Clear:** Added a 20-second recovery window after clearing the monthly log.
-- **Cancel Edit:** Added a button to exit Edit Mode without saving changes.
-- **Visual Feedback:** The "Add" button now changes color (Orange) when in Edit Mode.
-### Changed
-- Updated `localStorage` key to `monthlyInvoiceData_Final` for a fresh data structure.
+Live Table: Implemented a simple table that displayed tasks as they were added.
 
-## [1.1.0] - Layout & Detail Update
-### Added
-- **Legal Size Support:** Added CSS `@page` rules for 8.5" x 14" PDF export.
-- **Bulleted Descriptions:** Changed additional comments to a `textarea` that renders as a `<ul>` list.
-- **Daily Financial Tracker:** Added total hours and subtotals to each daily header.
-- **Edit Feature:** Added the ability to reload previous entries into the form for correction.
-### Removed
-- Removed "Professional Monthly Invoice" text to streamline the professional look.
+Basic Math: Added a function to multiply hours by a hardcoded rate to show a subtotal.
 
-## [1.0.0] - Initial Release
-### Added
-- Core invoicing engine with $5.17/hr default rate.
-- Persistent local storage.
-- Basic PDF print styling.
-- Task logging with date, title, and duration.
+[1.1.0] - Persistent Storage
+"The Memory Update"
+
+LocalStorage Integration: Added logic to save tasks to the browser's memory so data wouldn't disappear on page refresh.
+
+Clear Function: Added a "Clear" button to wipe the month's data for a fresh start.
+
+[1.2.0] - Professional Print & Layout
+"The Invoice Transition"
+
+Print Media Queries: Added CSS @media print rules to hide the input forms and buttons when printing.
+
+Grouped by Date: Updated the logic to automatically group multiple tasks under a single date header.
+
+Legal Size Support: Adjusted the container width and margins to support 8.5" x 14" (Legal) paper layouts.
+
+[1.3.0] - Dynamic Meta Data
+"The Client Update"
+
+User/Client Fields: Added inputs for "Invoice Number," "Client Name," and "Hourly Rate" directly in the UI.
+
+Real-time Updates: Linked these fields to the render function so the invoice header updates instantly as you type.
+
+[1.4.0] - Branding & Safety Nets
+"The Professional Build"
+
+Self-Branding: Added "Your Name / Company" and "Contact Info" fields that save permanently.
+
+Edit/Undo Logic: Introduced the ability to edit existing entries and a 15-second "Undo" window after clearing the invoice.
+
+The Default Rate: Hardcoded the specific $5.17 rate as the starting default.
+
+[1.5.0] - The AI "Polish" Experiment (REMOVED)
+"The Corporate Pivot"
+
+The Feature: Attempted to add a ✨ Professional Polish button to swap casual words for corporate ones.
+
+The Conflict: Discovered that automated text manipulation caused "double bullet points" and occasional script crashes.
+
+The Decision: Opted to Roll Back this feature to preserve 100% reliability and manual control over task descriptions.
+
+[1.5.1] - Final Stabilization (Current Version)
+"The Bulletproof Build"
+
+Code Hardening: Removed all experimental "Polish" logic to ensure the "Add to Invoice" button functions with a 100% success rate.
+
+UI Optimization: Cleaned up the "Additional Comments" box to emphasize plain-text entry.
+
+Final Key Sync: Locked the system to the stable v1.4 storage key.
