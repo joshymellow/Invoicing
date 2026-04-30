@@ -18,7 +18,7 @@ body {
 }
 
 .container {
-    max-width: 900px;
+    max-width: 950px;
     margin: 0 auto;
     background: white;
     padding: 40px;
@@ -37,7 +37,7 @@ h1, h3 { margin-top: 0; }
 .input-row, .log-row {
     display: flex;
     gap: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     flex-wrap: wrap;
 }
 
@@ -74,7 +74,6 @@ button {
 .btn-add { background: var(--accent); color: white; }
 .btn-print { background: var(--success); color: white; }
 .btn-clear { background: var(--danger); color: white; }
-button:hover { opacity: 0.9; transform: translateY(-1px); }
 
 .toolbar {
     display: flex;
@@ -91,13 +90,29 @@ button:hover { opacity: 0.9; transform: translateY(-1px); }
     margin-bottom: 30px;
 }
 
+.date-group-wrapper {
+    margin-bottom: 30px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
 .date-group-header {
     background: var(--bg-light);
     padding: 10px 15px;
     font-weight: bold;
-    border-left: 5px solid var(--accent);
-    margin: 25px 0 10px 0;
-    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.daily-subtotal-tag {
+    background: var(--primary);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
 }
 
 table {
@@ -107,8 +122,9 @@ table {
 
 th {
     text-align: left;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
+    background: #fafafa;
     color: #888;
     padding: 10px 15px;
     border-bottom: 1px solid var(--border);
@@ -117,6 +133,15 @@ th {
 td {
     padding: 12px 15px;
     border-bottom: 1px solid #f1f1f1;
+    vertical-align: top;
+}
+
+.comment-text {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 4px;
+    font-style: italic;
 }
 
 .invoice-footer {
@@ -133,12 +158,6 @@ td {
     text-align: right;
 }
 
-.total-box span:first-child {
-    display: block;
-    font-size: 0.9rem;
-    opacity: 0.8;
-}
-
 #totalDisplay {
     font-size: 2rem;
     display: block;
@@ -152,8 +171,10 @@ td {
 }
 
 @media print {
+    title { display: none; }
     body { background: white; padding: 0; }
-    .container { box-shadow: none; max-width: 100%; padding: 0; }
+    .container { box-shadow: none; max-width: 100%; padding: 0; border:none; }
     .no-print { display: none !important; }
-    .date-group-header { -webkit-print-color-adjust: exact; }
+    .date-group-header { -webkit-print-color-adjust: exact; background-color: #f8f9fa !important; }
+    .daily-subtotal-tag { -webkit-print-color-adjust: exact; background-color: #2c3e50 !important; }
 }
