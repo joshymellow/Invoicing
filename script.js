@@ -1,15 +1,10 @@
 const DEFAULT_RATE = 5.17;
 let editIndex = null;
-let lastSnapshot = null;
+let lastSnapshot = null; // For "Clear All"
+let deletedTaskSnapshot = null; // For single entry undo
 
-// Using the stable v1.4 storage key
 let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceData_v1.4')) || {
-    name: '',
-    num: '',
-    client: '',
-    contact: 'your-email@example.com',
-    rate: DEFAULT_RATE,
-    tasks: []
+    name: '', num: '', client: '', contact: '', rate: DEFAULT_RATE, tasks: []
 };
 
 window.onload = () => {
@@ -50,7 +45,7 @@ function addTask() {
         invoiceData.tasks[editIndex] = entry;
         editIndex = null;
         document.querySelector('.btn-add').innerText = "Add to Invoice";
-        document.getElementById('btn-cancel').style.display = "none"; // Hides on Save
+        document.getElementById('btn-cancel').style.display = "none";
     } else {
         invoiceData.tasks.push(entry);
     }
@@ -83,7 +78,7 @@ function editTask(index) {
     editIndex = index;
     const btn = document.querySelector('.btn-add');
     btn.innerText = "Save Changes";
-    document.getElementById('btn-cancel').style.display = "inline-block"; // SHOWS on Edit
+    document.getElementById('btn-cancel').style.display = "inline-block";
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -91,15 +86,31 @@ function cancelEdit() {
     editIndex = null;
     resetForm();
     document.querySelector('.btn-add').innerText = "Add to Invoice";
-    document.getElementById('btn-cancel').style.display = "none"; // HIDES on Cancel
+    document.getElementById('btn-cancel').style.display = "none";
 }
 
+// --- NEW UNDO DELETE LOGIC ---
+
 function deleteTask(index) {
-    if(confirm("Delete entry?")) {
-        invoiceData.tasks.splice(index, 1);
-        save();
-        render();
-    }
+    // Save a snapshot of the single task before deleting
+    deletedTaskSnapshot = { ...invoiceData.tasks[index] };
+    
+    invoiceData.tasks.splice(index, 1);
+    save();
+    render();
+
+    // Show the Undo button
+    const undoBtn = document.getElementById('btn-undo');
+    undoBtn.innerText = "↩ Undo Delete Entry";
+    undoBtn.style.display = "inline-block";
+    
+    // Auto-hide after 10 seconds
+    setTimeout(() => { 
+        if (deletedTaskSnapshot) {
+            undoBtn.style.display = "none";
+            deletedTaskSnapshot = null;
+        }
+    }, 10000);
 }
 
 function clearInvoice() {
@@ -108,20 +119,33 @@ function clearInvoice() {
         invoiceData.tasks = [];
         save();
         render();
-        document.getElementById('btn-undo').style.display = "inline-block";
-        setTimeout(() => { document.getElementById('btn-undo').style.display = "none"; }, 15000);
+        
+        const undoBtn = document.getElementById('btn-undo');
+        undoBtn.innerText = "↩ Undo Clear All";
+        undoBtn.style.display = "inline-block";
+        
+        setTimeout(() => { undoBtn.style.display = "none"; }, 15000);
     }
 }
 
 function undoClear() {
     if (lastSnapshot) {
+        // Restoring everything
         invoiceData.tasks = lastSnapshot;
         lastSnapshot = null;
-        document.getElementById('btn-undo').style.display = "none";
-        save();
-        render();
+    } else if (deletedTaskSnapshot) {
+        // Restoring just the one task
+        invoiceData.tasks.push(deletedTaskSnapshot);
+        invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+        deletedTaskSnapshot = null;
     }
+    
+    document.getElementById('btn-undo').style.display = "none";
+    save();
+    render();
 }
+
+// --- END UNDO LOGIC ---
 
 function save() { localStorage.setItem('monthlyInvoiceData_v1.4', JSON.stringify(invoiceData)); }
 
