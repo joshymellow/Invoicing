@@ -30,7 +30,6 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* Input Section Styling */
         .no-print {
             background: #fff;
             padding-bottom: 30px;
@@ -68,10 +67,7 @@
         .btn-clear { background-color: var(--danger-color); color: white; }
         button:hover { opacity: 0.8; }
 
-        /* Invoice Styling */
-        #invoice-render {
-            padding: 20px;
-        }
+        #invoice-render { padding: 20px; }
 
         .invoice-header {
             display: flex;
@@ -106,7 +102,6 @@
             font-weight: bold;
         }
 
-        /* Print Media Query */
         @media print {
             body { background-color: white; padding: 0; }
             .container { box-shadow: none; max-width: 100%; width: 100%; padding: 0; }
@@ -118,20 +113,19 @@
 <body>
 
     <div class="container">
-        <!-- Dashboard / Editor -->
         <div class="no-print">
             <h1>Invoice Manager</h1>
             
             <div class="input-row">
                 <input type="text" id="invoiceNum" placeholder="Invoice Number (e.g. #001)" oninput="updateMeta()">
                 <input type="text" id="clientName" placeholder="Client Name" oninput="updateMeta()">
-                <input type="number" id="hourlyRate" placeholder="Rate $/hr" value="50" oninput="updateMeta()">
+                <input type="number" id="hourlyRate" placeholder="Rate $/hr" value="20.76" oninput="updateMeta()">
             </div>
 
             <div class="input-row">
                 <input type="text" id="taskDesc" placeholder="Work Description...">
                 <input type="number" id="taskDuration" placeholder="Hours" step="0.25">
-                <span></span> <!-- spacer -->
+                <span></span>
                 <button class="btn-add" onclick="addTask()">+ Add Item</button>
             </div>
 
@@ -141,7 +135,6 @@
             </div>
         </div>
 
-        <!-- The Actual Invoice -->
         <div id="invoice-render">
             <div class="invoice-header">
                 <div>
@@ -150,7 +143,7 @@
                 </div>
                 <div style="text-align: right;">
                     <p><strong>Date:</strong> <span id="currentDate"></span></p>
-                    <p><strong>Rate:</strong> <span id="displayRate">$50.00</span>/hr</p>
+                    <p><strong>Rate:</strong> <span id="displayRate">$20.76</span>/hr</p>
                 </div>
             </div>
 
@@ -163,9 +156,7 @@
                         <th class="no-print delete-cell"></th>
                     </tr>
                 </thead>
-                <tbody id="taskList">
-                    <!-- Tasks injected here -->
-                </tbody>
+                <tbody id="taskList"></tbody>
             </table>
 
             <div class="total-section">
@@ -175,14 +166,14 @@
     </div>
 
     <script>
+        // Updated default rate to 20.76
         let invoiceData = JSON.parse(localStorage.getItem('myInvoiceData')) || {
             num: '001',
             client: '',
-            rate: 50,
+            rate: 20.76,
             tasks: []
         };
 
-        // Initialize page
         window.onload = () => {
             document.getElementById('invoiceNum').value = invoiceData.num;
             document.getElementById('clientName').value = invoiceData.client;
@@ -202,7 +193,6 @@
         function addTask() {
             const descEl = document.getElementById('taskDesc');
             const durEl = document.getElementById('taskDuration');
-            
             const desc = descEl.value;
             const duration = parseFloat(durEl.value);
 
@@ -211,7 +201,6 @@
                     description: desc,
                     duration: duration
                 });
-                
                 descEl.value = '';
                 durEl.value = '';
                 save();
@@ -228,11 +217,11 @@
         }
 
         function clearInvoice() {
-            if (confirm("Reset everything? This cannot be undone.")) {
-                invoiceData = { num: '001', client: '', rate: 50, tasks: [] };
+            if (confirm("Reset everything?")) {
+                invoiceData = { num: '001', client: '', rate: 20.76, tasks: [] };
                 document.getElementById('invoiceNum').value = '001';
                 document.getElementById('clientName').value = '';
-                document.getElementById('hourlyRate').value = 50;
+                document.getElementById('hourlyRate').value = 20.76;
                 save();
                 render();
             }
@@ -243,12 +232,10 @@
         }
 
         function render() {
-            // Update Header
             document.getElementById('displayInvNum').innerText = `INVOICE #${invoiceData.num}`;
             document.getElementById('displayClient').innerText = invoiceData.client ? `To: ${invoiceData.client}` : 'To: [Client Name]';
             document.getElementById('displayRate').innerText = `$${invoiceData.rate.toFixed(2)}`;
 
-            // Update Table
             const list = document.getElementById('taskList');
             list.innerHTML = '';
             let grandTotal = 0;
@@ -256,7 +243,6 @@
             invoiceData.tasks.forEach((task, index) => {
                 const amount = task.duration * invoiceData.rate;
                 grandTotal += amount;
-
                 list.innerHTML += `
                     <tr>
                         <td>${task.description}</td>
@@ -265,8 +251,7 @@
                         <td class="no-print delete-cell">
                             <button class="btn-clear" style="padding: 2px 8px;" onclick="deleteTask(${index})">✕</button>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             });
 
             document.getElementById('totalDisplay').innerText = `$${grandTotal.toFixed(2)}`;
