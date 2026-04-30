@@ -2,6 +2,7 @@ const DEFAULT_RATE = 5.17;
 let editIndex = null;
 let lastSnapshot = null;
 
+// Using the stable v1.4 storage key
 let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceData_v1.4')) || {
     name: '',
     num: '',
@@ -49,7 +50,7 @@ function addTask() {
         invoiceData.tasks[editIndex] = entry;
         editIndex = null;
         document.querySelector('.btn-add').innerText = "Add to Invoice";
-        document.getElementById('btn-cancel').style.display = "none";
+        document.getElementById('btn-cancel').style.display = "none"; // Hides on Save
     } else {
         invoiceData.tasks.push(entry);
     }
@@ -82,14 +83,15 @@ function editTask(index) {
     editIndex = index;
     const btn = document.querySelector('.btn-add');
     btn.innerText = "Save Changes";
-    document.getElementById('btn-cancel').style.display = "inline-block";
+    document.getElementById('btn-cancel').style.display = "inline-block"; // SHOWS on Edit
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function cancelEdit() {
     editIndex = null;
     resetForm();
     document.querySelector('.btn-add').innerText = "Add to Invoice";
-    document.getElementById('btn-cancel').style.display = "none";
+    document.getElementById('btn-cancel').style.display = "none"; // HIDES on Cancel
 }
 
 function deleteTask(index) {
@@ -125,9 +127,9 @@ function save() { localStorage.setItem('monthlyInvoiceData_v1.4', JSON.stringify
 
 function render() {
     document.getElementById('displayUserName').innerText = invoiceData.name || '[Your Name]';
-    document.getElementById('displayInvNum').innerText = "INVOICE #" + invoiceData.num;
-    document.getElementById('displayClient').innerText = invoiceData.client;
-    document.getElementById('displayContact').innerText = invoiceData.contact;
+    document.getElementById('displayInvNum').innerText = "INVOICE #" + (invoiceData.num || '');
+    document.getElementById('displayClient').innerText = invoiceData.client || '[Client]';
+    document.getElementById('displayContact').innerText = invoiceData.contact || '';
     document.getElementById('displayRate').innerText = "$" + invoiceData.rate.toFixed(2);
 
     const container = document.getElementById('tasksContainer');
@@ -148,12 +150,12 @@ function render() {
 
         const wrap = document.createElement('div');
         wrap.className = 'date-group-wrapper';
-        let html = `<div class="date-group-header"><span>${date}</span><span>Day: $${dayTotal.toFixed(2)}</span></div>`;
+        let html = `<div class="date-group-header"><span>${date}</span><span>Day Total: $${dayTotal.toFixed(2)}</span></div>`;
         html += `<table><thead><tr><th>Details</th><th>Hrs</th><th>Amt</th><th class="no-print"></th></tr></thead><tbody>`;
         
         groups[date].forEach(item => {
             html += `<tr><td><strong>${item.mainTask}</strong>${formatBullets(item.comments)}</td><td>${item.duration}</td><td>$${(item.duration * invoiceData.rate).toFixed(2)}</td>
-            <td class="no-print"><button class="action-btn" onclick="editTask(${item.originalIndex})">✎</button><button class="action-btn" onclick="deleteTask(${item.originalIndex})">✕</button></td></tr>`;
+            <td class="no-print"><button class="action-btn" style="color:#3498db" onclick="editTask(${item.originalIndex})">✎</button><button class="action-btn" style="color:#e74c3c" onclick="deleteTask(${item.originalIndex})">✕</button></td></tr>`;
         });
         wrap.innerHTML = html + `</tbody></table>`;
         container.appendChild(wrap);
