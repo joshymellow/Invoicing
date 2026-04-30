@@ -9,9 +9,9 @@ let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV2')) || {
 };
 
 window.onload = () => {
-    document.getElementById('invoiceNum').value = invoiceData.num;
-    document.getElementById('clientName').value = invoiceData.client;
-    document.getElementById('hourlyRate').value = invoiceData.rate;
+    document.getElementById('invoiceNum').value = invoiceData.num || '';
+    document.getElementById('clientName').value = invoiceData.client || '';
+    document.getElementById('hourlyRate').value = invoiceData.rate || DEFAULT_RATE;
     document.getElementById('taskDate').valueAsDate = new Date();
     document.getElementById('issueDate').innerText = new Date().toLocaleDateString();
     render();
@@ -26,29 +26,36 @@ function updateMeta() {
 }
 
 function addTask() {
-    const dateInput = document.getElementById('taskDate');
-    const mainInput = document.getElementById('taskMain');
-    const commInput = document.getElementById('taskComments');
-    const durInput = document.getElementById('taskDuration');
+    // 1. Grab the elements
+    const dateEl = document.getElementById('taskDate');
+    const mainEl = document.getElementById('taskMain');
+    const commEl = document.getElementById('taskComments');
+    const durEl = document.getElementById('taskDuration');
 
-    const date = dateInput.value;
-    const mainTask = mainInput.value;
-    const comments = commInput.value;
-    const duration = parseFloat(durInput.value);
+    // 2. Extract values
+    const date = dateEl.value;
+    const mainTask = mainEl.value;
+    const comments = commEl.value;
+    const duration = parseFloat(durEl.value);
 
-    if (date && mainTask && !isNaN(duration)) {
-        invoiceData.tasks.push({ date, mainTask, comments, duration });
-        invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
-        
-        mainInput.value = '';
-        commInput.value = '';
-        durInput.value = '';
-        
-        save();
-        render();
-    } else {
+    // 3. Validate
+    if (!date || !mainTask || isNaN(duration)) {
         alert("Please fill in Date, Main Task, and Hours.");
+        return;
     }
+
+    // 4. Push data
+    invoiceData.tasks.push({ date, mainTask, comments, duration });
+    
+    // 5. Sort and Save
+    invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+    save();
+    
+    // 6. Clear inputs & Refresh
+    mainEl.value = '';
+    commEl.value = '';
+    durEl.value = '';
+    render();
 }
 
 function deleteTask(index) {
@@ -100,17 +107,17 @@ function render() {
         wrapper.className = 'date-group-wrapper';
         
         let html = `
-            <div class="date-group-header">
+            <div class="date-group-header" style="background: #f8f9fa; padding: 10px; display: flex; justify-content: space-between; border-bottom: 1px solid #ddd;">
                 <span>${formattedDate}</span>
-                <span class="daily-subtotal-tag">Day Total: $${dailySubtotal.toFixed(2)}</span>
+                <span style="background: #2c3e50; color: white; padding: 2px 8px; border-radius: 4px;">Day Total: $${dailySubtotal.toFixed(2)}</span>
             </div>
-            <table>
+            <table style="width: 100%; border-collapse: collapse;">
                 <thead>
-                    <tr>
-                        <th style="width: 65%">Task Details</th>
-                        <th style="width: 10%">Hours</th>
-                        <th style="width: 15%">Amount</th>
-                        <th class="no-print" style="width: 10%"></th>
+                    <tr style="text-align: left; background: #fafafa;">
+                        <th style="padding: 10px; width: 60%;">Details</th>
+                        <th style="padding: 10px; width: 15%;">Hours</th>
+                        <th style="padding: 10px; width: 15%;">Amount</th>
+                        <th class="no-print" style="padding: 10px; width: 10%;"></th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -118,15 +125,15 @@ function render() {
         groups[dateString].forEach(item => {
             const lineTotal = item.duration * invoiceData.rate;
             html += `
-                <tr>
-                    <td>
+                <tr style="border-top: 1px solid #eee;">
+                    <td style="padding: 10px;">
                         <strong>${item.mainTask}</strong>
-                        ${item.comments ? `<span class="comment-text">${item.comments}</span>` : ''}
+                        ${item.comments ? `<br><small style="color: #666; font-style: italic;">${item.comments}</small>` : ''}
                     </td>
-                    <td>${item.duration}</td>
-                    <td>$${lineTotal.toFixed(2)}</td>
-                    <td class="no-print">
-                        <button class="delete-btn" onclick="deleteTask(${item.originalIndex})">✕</button>
+                    <td style="padding: 10px;">${item.duration}</td>
+                    <td style="padding: 10px;">$${lineTotal.toFixed(2)}</td>
+                    <td class="no-print" style="padding: 10px;">
+                        <button onclick="deleteTask(${item.originalIndex})" style="color: red; border: none; background: none; cursor: pointer;">✕</button>
                     </td>
                 </tr>`;
         });
