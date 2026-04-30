@@ -1,9 +1,9 @@
-/* script.js */
+/* script.js - v1.4 Balanced Refiner */
 const DEFAULT_RATE = 5.17;
 let editIndex = null;
 let lastSnapshot = null;
 
-let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceData_v1.4')) || {
+let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceData_v1.5')) || {
     name: '',
     num: '',
     client: '',
@@ -33,6 +33,44 @@ function updateMeta() {
     render();
 }
 
+function refineTasks() {
+    const commEl = document.getElementById('taskComments');
+    let text = commEl.value;
+    if (!text) return;
+
+    // "Active Professional" Dictionary (Clean & Precise, not exaggerated)
+    const upgrades = [
+        { find: /\bfixed\b/gi, replace: "Resolved" },
+        { find: /\bhelped\b/gi, replace: "Assisted with" },
+        { find: /\bstarted\b/gi, replace: "Initiated" },
+        { find: /\bfinished\b/gi, replace: "Completed" },
+        { find: /\btalked to\b/gi, replace: "Liaised with" },
+        { find: /\bchanged\b/gi, replace: "Updated" },
+        { find: /\bmade\b/gi, replace: "Developed" },
+        { find: /\bchecked\b/gi, replace: "Reviewed" },
+        { find: /\blooked at\b/gi, replace: "Analyzed" },
+        { find: /\bworked on\b/gi, replace: "Focused on" },
+        { find: /\bbug\b/gi, replace: "issue" },
+        { find: /\bstuff\b/gi, replace: "requirements" }
+    ];
+
+    upgrades.forEach(item => {
+        text = text.replace(item.find, item.replace);
+    });
+
+    // Clean up: Ensure bullet points exist if text was typed without them
+    let lines = text.split('\n').filter(l => l.trim() !== '');
+    lines = lines.map(line => {
+        line = line.trim();
+        if (!line.startsWith('•') && !line.startsWith('-')) {
+            return '• ' + line;
+        }
+        return line;
+    });
+
+    commEl.value = lines.join('\n');
+}
+
 function addTask() {
     const date = document.getElementById('taskDate').value;
     const mainTask = document.getElementById('taskMain').value;
@@ -49,9 +87,7 @@ function addTask() {
     if (editIndex !== null) {
         invoiceData.tasks[editIndex] = entry;
         editIndex = null;
-        const btn = document.querySelector('.btn-add');
-        btn.innerText = "Add to Invoice";
-        btn.style.background = "";
+        document.querySelector('.btn-add').innerText = "Add to Invoice";
         document.getElementById('btn-cancel').style.display = "none";
     } else {
         invoiceData.tasks.push(entry);
@@ -93,9 +129,7 @@ function editTask(index) {
 function cancelEdit() {
     editIndex = null;
     resetForm();
-    const btn = document.querySelector('.btn-add');
-    btn.innerText = "Add to Invoice";
-    btn.style.background = "";
+    document.querySelector('.btn-add').innerText = "Add to Invoice";
     document.getElementById('btn-cancel').style.display = "none";
 }
 
@@ -113,7 +147,6 @@ function clearInvoice() {
         invoiceData.tasks = [];
         save();
         render();
-        
         const undoBtn = document.getElementById('btn-undo');
         undoBtn.style.display = "inline-block";
         setTimeout(() => { undoBtn.style.display = "none"; }, 20000);
@@ -130,10 +163,10 @@ function undoClear() {
     }
 }
 
-function save() { localStorage.setItem('monthlyInvoiceData_v1.4', JSON.stringify(invoiceData)); }
+function save() { localStorage.setItem('monthlyInvoiceData_v1.5', JSON.stringify(invoiceData)); }
 
 function render() {
-    document.getElementById('displayUserName').innerText = invoiceData.name || '[Your Name / Company]';
+    document.getElementById('displayUserName').innerText = invoiceData.name || '[Your Name]';
     document.getElementById('displayInvNum').innerText = invoiceData.num ? `INVOICE #${invoiceData.num}` : 'INVOICE';
     document.getElementById('displayClient').innerText = invoiceData.client || '[Client Name]';
     document.getElementById('displayContact').innerText = invoiceData.contact || 'No Contact Info';
