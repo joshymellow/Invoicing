@@ -1,7 +1,8 @@
 const DEFAULT_RATE = 5.17;
 let editIndex = null;
+let lastSnapshot = null;
 
-let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV5')) || {
+let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceData_Final')) || {
     num: '',
     client: '',
     rate: DEFAULT_RATE,
@@ -44,17 +45,21 @@ function addTask() {
         const btn = document.querySelector('.btn-add');
         btn.innerText = "Add to Invoice";
         btn.style.background = "";
+        document.getElementById('btn-cancel').style.display = "none";
     } else {
         invoiceData.tasks.push(entry);
     }
 
     invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     save();
-    
+    resetForm();
+    render();
+}
+
+function resetForm() {
     document.getElementById('taskMain').value = '';
     document.getElementById('taskComments').value = '';
     document.getElementById('taskDuration').value = '';
-    render();
 }
 
 function formatBullets(text) {
@@ -69,11 +74,22 @@ function editTask(index) {
     document.getElementById('taskMain').value = t.mainTask;
     document.getElementById('taskComments').value = t.comments;
     document.getElementById('taskDuration').value = t.duration;
+    
     editIndex = index;
     const btn = document.querySelector('.btn-add');
     btn.innerText = "Save Changes";
-    btn.style.background = "#f39c12";
+    btn.style.background = "#f39c12"; // Warning color
+    document.getElementById('btn-cancel').style.display = "inline-block";
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelEdit() {
+    editIndex = null;
+    resetForm();
+    const btn = document.querySelector('.btn-add');
+    btn.innerText = "Add to Invoice";
+    btn.style.background = "";
+    document.getElementById('btn-cancel').style.display = "none";
 }
 
 function deleteTask(index) {
@@ -85,14 +101,29 @@ function deleteTask(index) {
 }
 
 function clearInvoice() {
-    if(confirm("Clear all data?")) {
+    if(confirm("Are you sure? This will delete all monthly logs.")) {
+        lastSnapshot = [...invoiceData.tasks]; // Save backup
         invoiceData.tasks = [];
+        save();
+        render();
+        
+        const undoBtn = document.getElementById('btn-undo');
+        undoBtn.style.display = "inline-block";
+        setTimeout(() => { undoBtn.style.display = "none"; }, 20000); // 20 second window
+    }
+}
+
+function undoClear() {
+    if (lastSnapshot) {
+        invoiceData.tasks = lastSnapshot;
+        lastSnapshot = null;
+        document.getElementById('btn-undo').style.display = "none";
         save();
         render();
     }
 }
 
-function save() { localStorage.setItem('monthlyInvoiceDataV5', JSON.stringify(invoiceData)); }
+function save() { localStorage.setItem('monthlyInvoiceData_Final', JSON.stringify(invoiceData)); }
 
 function render() {
     document.getElementById('displayInvNum').innerText = invoiceData.num ? `INVOICE #${invoiceData.num}` : 'INVOICE';
