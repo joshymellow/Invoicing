@@ -1,7 +1,7 @@
 const DEFAULT_RATE = 5.17;
-let editIndex = null; // Tracks if we are editing an existing item
+let editIndex = null;
 
-let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV2')) || {
+let invoiceData = JSON.parse(localStorage.getItem('monthlyInvoiceDataV3')) || {
     num: '',
     client: '',
     rate: DEFAULT_RATE,
@@ -34,7 +34,7 @@ function addTask() {
 
     const date = dateEl.value;
     const mainTask = mainEl.value;
-    const comments = commEl.value;
+    const comments = commEl.value; // This now captures multiple lines
     const duration = parseFloat(durEl.value);
 
     if (!date || !mainTask || isNaN(duration)) {
@@ -45,42 +45,42 @@ function addTask() {
     const newTask = { date, mainTask, comments, duration };
 
     if (editIndex !== null) {
-        // Update existing task
         invoiceData.tasks[editIndex] = newTask;
         editIndex = null;
         btnEl.innerText = "Add to Invoice";
-        btnEl.style.background = ""; // Reset to original blue
+        btnEl.style.background = ""; 
     } else {
-        // Add new task
         invoiceData.tasks.push(newTask);
     }
     
     invoiceData.tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     save();
     
-    // Clear inputs
     mainEl.value = '';
     commEl.value = '';
     durEl.value = '';
     render();
 }
 
+// Helper to turn text lines into a bulleted list
+function formatBullets(text) {
+    if (!text) return '';
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    if (lines.length === 0) return '';
+    return `<ul class="bullet-list">` + lines.map(line => `<li>${line}</li>`).join('') + `</ul>`;
+}
+
 function editTask(index) {
     const task = invoiceData.tasks[index];
-    
-    // Load values back into the form
     document.getElementById('taskDate').value = task.date;
     document.getElementById('taskMain').value = task.mainTask;
     document.getElementById('taskComments').value = task.comments;
     document.getElementById('taskDuration').value = task.duration;
 
-    // Set UI to Edit Mode
     editIndex = index;
     const btnEl = document.querySelector('.btn-add');
     btnEl.innerText = "Save Changes";
-    btnEl.style.background = "#f39c12"; // Orange to indicate editing
-    
-    // Scroll to top
+    btnEl.style.background = "#f39c12"; 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -101,7 +101,7 @@ function clearInvoice() {
 }
 
 function save() {
-    localStorage.setItem('monthlyInvoiceDataV2', JSON.stringify(invoiceData));
+    localStorage.setItem('monthlyInvoiceDataV3', JSON.stringify(invoiceData));
 }
 
 function render() {
@@ -133,25 +133,19 @@ function render() {
 
         const wrapper = document.createElement('div');
         wrapper.className = 'date-group-wrapper';
-        wrapper.style.marginBottom = "20px";
-        wrapper.style.border = "1px solid #ddd";
-        wrapper.style.borderRadius = "8px";
-        wrapper.style.overflow = "hidden";
         
         let html = `
-            <div class="date-group-header" style="background: #2c3e50; color: white; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: bold;">${formattedDate}</span>
-                <span style="font-size: 0.9rem; opacity: 0.9;">
-                    Hours: ${dailyHours.toFixed(2)} | Subtotal: $${dailySubtotal.toFixed(2)}
-                </span>
+            <div class="date-group-header">
+                <span>${formattedDate}</span>
+                <span>Hours: ${dailyHours.toFixed(2)} | Day Total: $${dailySubtotal.toFixed(2)}</span>
             </div>
-            <table style="width: 100%; border-collapse: collapse; background: white;">
+            <table>
                 <thead>
-                    <tr style="text-align: left; background: #f1f1f1; font-size: 0.8rem;">
-                        <th style="padding: 10px;">Details</th>
-                        <th style="padding: 10px;">Hrs</th>
-                        <th style="padding: 10px;">Amt</th>
-                        <th class="no-print" style="padding: 10px; width: 80px;">Action</th>
+                    <tr>
+                        <th style="width: 65%">Task Details</th>
+                        <th style="width: 10%">Hours</th>
+                        <th style="width: 15%">Amount</th>
+                        <th class="no-print" style="width: 10%"></th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -159,16 +153,16 @@ function render() {
         groups[dateString].forEach(item => {
             const lineTotal = item.duration * invoiceData.rate;
             html += `
-                <tr style="border-top: 1px solid #eee;">
-                    <td style="padding: 10px;">
-                        <strong style="display:block;">${item.mainTask}</strong>
-                        ${item.comments ? `<small style="color: #666;">${item.comments}</small>` : ''}
+                <tr>
+                    <td>
+                        <strong>${item.mainTask}</strong>
+                        ${formatBullets(item.comments)}
                     </td>
-                    <td style="padding: 10px;">${item.duration}</td>
-                    <td style="padding: 10px;">$${lineTotal.toFixed(2)}</td>
-                    <td class="no-print" style="padding: 10px; white-space: nowrap;">
-                        <button onclick="editTask(${item.originalIndex})" style="color: #3498db; border: none; background: none; cursor: pointer; padding-right: 10px;">✎</button>
-                        <button onclick="deleteTask(${item.originalIndex})" style="color: #e74c3c; border: none; background: none; cursor: pointer;">✕</button>
+                    <td>${item.duration}</td>
+                    <td>$${lineTotal.toFixed(2)}</td>
+                    <td class="no-print">
+                        <button onclick="editTask(${item.originalIndex})" class="action-btn" style="color: #3498db;">✎</button>
+                        <button onclick="deleteTask(${item.originalIndex})" class="action-btn" style="color: #e74c3c;">✕</button>
                     </td>
                 </tr>`;
         });
@@ -178,5 +172,4 @@ function render() {
         container.appendChild(wrapper);
     });
 
-    document.getElementById('totalDisplay').innerText = `$${grandTotal.toFixed(2)}`;
-}
+    document.getElementById('totalDispla
