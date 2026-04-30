@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monthly Work Log</title>
+    <title>Work Log & Invoice Manager</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -52,15 +52,19 @@
                 <label>Additional Comments (Enter for new bullet point)</label>
                 <textarea id="taskComments" placeholder="• Detailed note 1&#10;• Detailed note 2" rows="3"></textarea>
             </div>
-            <div class="field action" style="max-width: 200px;">
+            <div class="field action" style="max-width: 250px;">
                 <label>&nbsp;</label>
-                <button class="btn-add" onclick="addTask()">Add to Invoice</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-add" onclick="addTask()">Add to Invoice</button>
+                    <button id="btn-cancel" class="btn-secondary" style="display:none;" onclick="cancelEdit()">Cancel</button>
+                </div>
             </div>
         </div>
 
         <div class="toolbar">
             <button class="btn-print" onclick="window.print()">Print / Save PDF (Legal)</button>
             <button class="btn-clear" onclick="clearInvoice()">Clear Entire Month</button>
+            <button id="btn-undo" class="btn-undo" style="display:none;" onclick="undoClear()">↩ Undo Clear</button>
         </div>
     </div>
 
