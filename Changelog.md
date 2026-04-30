@@ -2,6 +2,13 @@
 
 All notable changes to the Work Log & Invoice Manager will be documented in this file.
 
+## [1.3.0] - Master Branding Update - 2026-04-30
+### Added
+- **Your Name / Company Field:** The user can now input their own name or business name.
+- **Balanced Header Layout:** Redesigned the invoice header to look like high-end professional stationery.
+### Changed
+- Shifted meta-info (Invoice #, Client, Rate) to the right-hand side for better document flow.
+
 ## [1.2.0] - Post-Release "Safety Net" Update - 2026-04-30
 ### Added
 - **Undo Clear:** Added a 20-second recovery window after clearing the monthly log.
