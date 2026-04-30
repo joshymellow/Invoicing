@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Log & Invoice Manager</title>
+    <title>Professional Work Log & Invoice Manager</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,26 +11,29 @@
 <div class="container">
     <div class="no-print">
         <h1>Invoice Manager</h1>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">
+            Complete the fields below to personalize your invoice.
+        </p>
         
         <div class="input-row">
              <div class="field" style="flex: 1.5;">
                 <label>Your Name / Company</label>
-                <input type="text" id="userName" placeholder="Your Name" oninput="updateMeta()">
+                <input type="text" id="userName" placeholder="Your Full Name" oninput="updateMeta()">
             </div>
             <div class="field" style="flex: 2;">
-                <label>Contact Info</label>
-                <input type="text" id="contactInfo" placeholder="email@example.com" oninput="updateMeta()">
+                <label>Contact Info (Email/Phone)</label>
+                <input type="text" id="contactInfo" placeholder="your@email.com" oninput="updateMeta()">
             </div>
         </div>
 
         <div class="input-row">
             <div class="field">
                 <label>Invoice #</label>
-                <input type="text" id="invoiceNum" oninput="updateMeta()">
+                <input type="text" id="invoiceNum" placeholder="e.g. INV-001" oninput="updateMeta()">
             </div>
             <div class="field" style="flex: 1.5;">
                 <label>Client Name</label>
-                <input type="text" id="clientName" oninput="updateMeta()">
+                <input type="text" id="clientName" placeholder="Client Name" oninput="updateMeta()">
             </div>
             <div class="field" style="max-width: 100px;">
                 <label>Rate ($)</label>
@@ -48,52 +51,53 @@
             </div>
             <div class="field" style="flex: 2;">
                 <label>Main Task</label>
-                <input type="text" id="taskMain" placeholder="Primary Task">
+                <input type="text" id="taskMain" placeholder="Primary Task Title">
             </div>
             <div class="field">
                 <label>Hours</label>
-                <input type="number" id="taskDuration" step="0.1">
+                <input type="number" id="taskDuration" placeholder="0.00" step="0.25">
             </div>
         </div>
         <div class="log-row">
             <div class="field">
-                <label>Additional Comments</label>
-                <textarea id="taskComments" rows="3"></textarea>
-                <button type="button" onclick="refineTasks()" style="margin-top: 8px; background: #6c5ce7; color: white; border: none; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.7rem;">✨ Professional Polish</button>
+                <label>Additional Comments (Enter for new bullet point)</label>
+                <textarea id="taskComments" placeholder="• Detailed note 1&#10;• Detailed note 2" rows="3"></textarea>
             </div>
             <div class="field action" style="max-width: 250px;">
                 <label>&nbsp;</label>
                 <div style="display: flex; gap: 8px;">
-                    <button class="btn-add" id="mainAddBtn" onclick="addTask()">Add to Invoice</button>
+                    <button class="btn-add" onclick="addTask()">Add to Invoice</button>
                     <button id="btn-cancel" class="btn-secondary" style="display:none;" onclick="cancelEdit()">Cancel</button>
                 </div>
             </div>
         </div>
 
         <div class="toolbar">
-            <button class="btn-print" onclick="window.print()">Print PDF (Legal)</button>
-            <button class="btn-clear" onclick="clearInvoice()">Clear All</button>
-            <button id="btn-undo" class="btn-undo" style="display:none;" onclick="undoClear()">Undo Clear</button>
+            <button class="btn-print" onclick="window.print()">Print / Save PDF (Legal)</button>
+            <button class="btn-clear" onclick="clearInvoice()">Clear Entire Month</button>
+            <button id="btn-undo" class="btn-undo" style="display:none;" onclick="undoClear()">↩ Undo Clear</button>
         </div>
     </div>
 
     <div id="invoice-view">
         <header class="invoice-header">
-            <div>
-                <h2 id="displayUserName">[Your Name]</h2>
-                <p>Contact: <span id="displayContact"></span></p>
+            <div class="user-info">
+                <h2 id="displayUserName" style="margin:0; color:var(--primary);">[Your Name]</h2>
+                <p style="margin:5px 0 0 0; color:#555;"><strong>Contact:</strong> <span id="displayContact"></span></p>
             </div>
-            <div style="text-align: right;">
-                <h3 id="displayInvNum">INVOICE</h3>
-                <p>Client: <span id="displayClient"></span></p>
-                <p>Rate: <span id="displayRate"></span>/hr</p>
-                <p>Issued: <span id="issueDate"></span></p>
+            <div class="meta-info" style="text-align: right;">
+                <h3 id="displayInvNum" style="margin:0; font-size: 1.2rem;">INVOICE</h3>
+                <p style="margin:5px 0 0 0;"><strong>Client:</strong> <span id="displayClient"></span></p>
+                <p style="margin:2px 0 0 0;"><strong>Rate:</strong> <span id="displayRate"></span>/hr</p>
+                <p style="margin:2px 0 0 0;"><strong>Issued:</strong> <span id="issueDate"></span></p>
             </div>
         </header>
+
         <div id="tasksContainer"></div>
+
         <footer class="invoice-footer">
             <div class="total-box">
-                <span>Total Due:</span>
+                <span>Grand Total Due:</span>
                 <span id="totalDisplay">$0.00</span>
             </div>
         </footer>
