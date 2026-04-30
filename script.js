@@ -1,10 +1,24 @@
-const hourlyRate = 50; // Set your rate here
+const hourlyRate = 50; 
 let tasks = JSON.parse(localStorage.getItem('invoiceTasks')) || [];
 
-// Load existing tasks on startup
 window.onload = () => {
+    // Load Invoice Number
+    const savedNum = localStorage.getItem('invoiceNum') || '';
+    document.getElementById('invoiceNum').value = savedNum;
+    document.getElementById('displayInvNum').innerText = savedNum ? `INVOICE #${savedNum}` : 'INVOICE';
+
+    // Set Today's Date
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString();
+
     renderTable();
 };
+
+// Saves invoice number to storage as you type
+function saveInvoiceNum() {
+    const num = document.getElementById('invoiceNum').value;
+    localStorage.setItem('invoiceNum', num);
+    document.getElementById('displayInvNum').innerText = num ? `INVOICE #${num}` : 'INVOICE';
+}
 
 function addTask() {
     const descInput = document.getElementById('taskDesc');
@@ -23,11 +37,8 @@ function addTask() {
         tasks.push(newTask);
         saveAndRender();
 
-        // Clear inputs
         descInput.value = '';
         durationInput.value = '';
-    } else {
-        alert("Please enter both a description and duration.");
     }
 }
 
@@ -39,8 +50,7 @@ function saveAndRender() {
 function renderTable() {
     const tableBody = document.getElementById('taskList');
     let totalAmount = 0;
-    
-    tableBody.innerHTML = ''; // Clear current view
+    tableBody.innerHTML = ''; 
 
     tasks.forEach((task, index) => {
         totalAmount += task.amount;
@@ -64,8 +74,10 @@ function deleteTask(index) {
 }
 
 function clearInvoice() {
-    if (confirm("Are you sure you want to clear the entire invoice?")) {
+    if (confirm("Clear all tasks and invoice number?")) {
         tasks = [];
+        localStorage.removeItem('invoiceNum');
+        document.getElementById('invoiceNum').value = '';
         saveAndRender();
     }
 }
